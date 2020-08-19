@@ -15,10 +15,10 @@ application.post('/Doctor', authorization, addADoctor)
 application.delete('/Doctors/:dId',authorization, deleteDoctor)
 
 
-application.get('/Booking-history', authorization, getBookingHistory)
+application.post('/Booking', authorization, createBooking)
 application.get('/Booking/:bId',authorization, getBookingDetail)
 application.get('/All-bookings', authorization, getAllBookings)
-application.post('/Booking', authorization, createBooking)
+application.get('/Booking-history', authorization, getBookingHistory)
 application.delete('/Booking/:bId', authorization, deleteBooking)
 
 

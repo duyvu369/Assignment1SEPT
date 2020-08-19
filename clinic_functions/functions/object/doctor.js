@@ -20,8 +20,8 @@ exports.addADoctor = (req, res) =>{
       expertise: req.body.expertise,
       background: req.body.background
     })
-    .then(
-      res.json( `Doctor ${req.body.name} (id: ${doc.id}) has joined the team!`)
+    .then(doc=>{
+      res.json( `Doctor ${req.body.name} (id: ${doc.id}) has joined the team!`)}
     )
       .catch((error)=>{
         console.error(error)
