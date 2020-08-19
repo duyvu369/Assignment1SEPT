@@ -12,7 +12,6 @@ exports.createBooking = (req, res) =>{
     paymentMethod: req.body.paymentMethod,
     service: req.body.service
   }
-
   const mistakes ={}
   if (legitName(newBookingForm.name)===false){
     mistakes.name = 'Name can not be empty nor exceed 25 characters!'
