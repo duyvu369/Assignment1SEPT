@@ -1,4 +1,5 @@
-const { admin }= require('../main/admin')
+const { admin } = require('../main/admin')
+
 
 //show all the doctors in the hospital
 exports.getAllDoctors =(req, res) => {
@@ -45,4 +46,28 @@ exports.deleteDoctor =(req,res)=>{
     })
   })
   
+}
+
+exports.viewAppointment =(req,res)=>{
+  const assignedAppointment = []
+  return admin.firestore().collection('Bookings').where("doctorContact","==",req.user.email).get().then(doc=>{
+    if(doc ===null){
+      return res.status(404).json({error:"404 not found!"})
+    } else{
+      doc.forEach(data=>{
+        assignedAppointment.push({
+          bId:doc.id,
+          ...data.data()
+        })
+      })
+    }
+    if (assignedAppointment.length===0){
+      return res.status(404).json({empty: "No booking has been scheduled!"})
+    }
+    return res.json({assignedAppointment})
+  })
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
 }
