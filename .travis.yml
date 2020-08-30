@@ -9,6 +9,6 @@
     "node"
   ],
   "script": [
-    "npm run test:coveralls"
+    "npm test"
   ]
 }
