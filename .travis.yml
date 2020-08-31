@@ -1,11 +1,7 @@
-language: node_js
-node_js:
-  - "node"
-  - "10"
-  - "8"
-  - "6"
-
-cache: yarn
-install: yarn
-
-script: yarn test
+  language: node_js
+  os: windows
+  sudo: false
+  node_js:
+    - 12
+  script:
+    npm test
