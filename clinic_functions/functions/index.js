@@ -31,6 +31,6 @@ application.post('/register', accountRegister)
 application.post('/login', login)
 application.put('/account', authorization, updateAccountInfo)
 application.delete('/account',authorization, deleteAccount)
-//add comments
+
 //deployment to the default region US
 exports.AyPiAI = functions.https.onRequest(application)
