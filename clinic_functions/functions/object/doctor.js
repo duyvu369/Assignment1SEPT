@@ -48,6 +48,7 @@ exports.deleteDoctor =(req,res)=>{
   
 }
 
+//Allow doctor to vew appointments assigned to them
 exports.viewAppointment =(req,res)=>{
   const assignedAppointment = []
   return admin.firestore().collection('Bookings').where("doctorContact","==",req.user.email).get().then(doc=>{
@@ -61,6 +62,7 @@ exports.viewAppointment =(req,res)=>{
         })
       })
     }
+    //If there is no appointments, it will return a message
     if (assignedAppointment.length===0){
       return res.status(404).json({empty: "No booking has been scheduled!"})
     }

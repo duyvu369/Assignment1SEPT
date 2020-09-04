@@ -8,6 +8,7 @@ const { getAllBookings, createBooking, getBookingHistory, getBookingDetail, dele
 const { getAllDoctors, addADoctor, deleteDoctor, viewAppointment} = require('./object/doctor')
 const { authorization} = require('./main/authorization')
 const { assignBooking } = require('./object/manager')
+const { getAllFeedbacks, createFeedback, getFeedbackDetail, getFeedbackHistory, deleteFeedback, updateFeedbackInfo } = require('./service/feedback')
 
 application.post('/manager-register',managerRegister)
 application.put('/Booking/Assign/:bId',authorization,assignBooking)
@@ -31,6 +32,13 @@ application.post('/register', accountRegister)
 application.post('/login', login)
 application.put('/account', authorization, updateAccountInfo)
 application.delete('/account',authorization, deleteAccount)
+
+application.post('/feedback', authorization, createFeedback)
+application.get('/feedback/:bId',authorization, getFeedbackDetail)
+application.get('/All-feedbacks', authorization, getAllFeedbacks)
+application.get('/feedback-history', authorization, getFeedbackHistory)
+application.delete('/feedback/:bId', authorization, deleteFeedback)
+application.put('/feedback/:bId',authorization,updateFeedbackInfo)
 
 //deployment to the default region US
 exports.AyPiAI = functions.https.onRequest(application)

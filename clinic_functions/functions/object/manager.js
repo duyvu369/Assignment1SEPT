@@ -6,6 +6,8 @@ exports.assignBooking = (req,res) =>{
   var manager = {}
     admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
        manager = doc.data()
+       
+       //Reject unauthorized accounts
       if(manager.position===null || manager.position!="Manager"){
         return res.status(401).json({error:"Unauthorized!"})
       }
@@ -14,13 +16,13 @@ exports.assignBooking = (req,res) =>{
     const newStatus = {
         "status":req.body.status
     }
-    
     if (req.body.doctor!=null ){
       newStatus.doctor = req.body.doctor
     } 
     if (req.body.doctorContact!=null  ){
       newStatus.doctorContact = req.body.doctorContact
     }
+
     //validate that the update info is correct
     const mistakes ={}
     if (newStatus.status!=null){

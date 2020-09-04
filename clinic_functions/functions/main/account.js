@@ -67,7 +67,11 @@ exports.accountRegister = (req, res) =>{
             userId
           }
           return admin.firestore().doc(`/accounts/${newAccount.phone}`).set(accountInfo).then(()=>{
-            return res.status(201).json({accountToken})})
+            return firebase.auth().signInWithEmailAndPassword(accountInfo.email, accountInfo.password).then(doc =>{
+              let user = firebase.auth().currentUser
+              user.sendEmailVerification()
+              return res.status(201).json({message:` A verification link has been sent to your email!, ${accountToken}`})})
+            })
         })
       }
     })
@@ -88,6 +92,7 @@ exports.login = (req,res)=>{
       email: req.body.email,
       password: req.body.password
     }
+
     const mistakes ={}
   
     if (legitPassword(account.password)===false){
@@ -100,9 +105,10 @@ exports.login = (req,res)=>{
       return res.status(401).json(mistakes)
     }
     firebase.auth().signInWithEmailAndPassword(account.email, account.password).then(doc =>{
+      
       return doc.user.getIdToken()
     }).then(tokenCode =>{
-      return res.json(tokenCode)
+      return res.json({message:`${tokenCode}`})
     })
     .catch(errors =>{
       console.error(errors)
@@ -280,7 +286,9 @@ exports.doctorRegister = (req, res) =>{
           userId
         }
         return admin.firestore().doc(`/accounts/${newDoctor.phone}`).set(accountInfo).then(()=>{
-          return res.status(201).json({accountToken})})
+          let user = firebase.auth().currentUser
+          user.sendEmailVerification()
+          return res.status(201).json({message:` A verification link has been sent to your email!, ${accountToken}`})})
       })
     }
   })
@@ -327,12 +335,14 @@ exports.managerRegister = (req, res) =>{
   var accountToken
   let userId
   admin.firestore().doc(`/accounts/${newAccount.phone}`).get().then(doc=>{
+    //If the  phone has been already used,
     if (doc.exists){
       res.status(402).json( {phone:`${doc.data().phone} has already been used.`})
     }
     else {
       return firebase.auth().createUserWithEmailAndPassword(newAccount.email, newAccount.password).
       then(data=>{
+        
         userId = data.user.uid
         return data.user.getIdToken()
       }).then(tokenCode =>{
@@ -347,11 +357,13 @@ exports.managerRegister = (req, res) =>{
           userId
         }
         return admin.firestore().doc(`/accounts/${newAccount.phone}`).set(accountInfo).then(()=>{
-          return res.status(201).json({accountToken})})
-      })
-    }
-  })
-  //catching reusing email error
+          let user = firebase.auth().currentUser
+          user.sendEmailVerification()
+          return res.status(201).json({message:` A verification link has been sent to your email!, ${accountToken}`})
+            })
+          })
+  }})
+  //If user reused an email, send an error message
   .catch((errors)=>{
     console.error(errors)
     if (errors.code === "auth/email-already-in-use"){

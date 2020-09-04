@@ -153,3 +153,52 @@ exports.deleteBooking =(req,res)=>{
   })
   }}
   )}
+
+exports.bookingFilterByDate =(req,res)=>{
+  const bookings = []
+  return admin.firestore().collection('Bookings').where("time","==",req.body.time).get().then(doc=>{
+    if(doc ===null){
+      return res.status(404).json({error:"404 not found!"})
+    } else{
+      doc.forEach(data=>{
+        bookings.push({
+          bId:doc.id,
+          ...data.data()
+        })
+      })
+    }
+    if (bookingHisotry.length===0){
+      return res.status(404).json({empty: "No bookings were scheduled on that day!"})
+    }
+    return res.json({bookingHisotry})
+  })
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
+}
+
+exports.bookingFilterByName =(req,res)=>{
+  const bookings = []
+  return admin.firestore().collection('Bookings').where("name","==",req.body.name).get().then(doc=>{
+    if(doc ===null){
+      return res.status(404).json({error:"404 not found!"})
+    } else{
+      doc.forEach(data=>{
+        bookings.push({
+          bId:doc.id,
+          ...data.data()
+        })
+      })
+    }
+    if (bookingHisotry.length===0){
+      return res.status(404).json({empty: "No bookings were created by that person!"})
+    }
+    return res.json({bookingHisotry})
+  })
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
+}
+    
