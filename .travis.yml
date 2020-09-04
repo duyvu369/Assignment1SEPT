@@ -3,7 +3,6 @@ language: node_js
 node_js:
   - node
   - 12
-cache: yarn
-install: yarn
+install: jest
 
-script: yarn test
+script: npm test
