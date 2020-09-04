@@ -3,6 +3,8 @@ language: node_js
 node_js:
   - node
   - 12
-install: npm install --save-dev jest
+install: 
+ - npm init
+ - npm install --save-dev jest
 
 script: npm test
