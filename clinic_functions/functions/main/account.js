@@ -15,8 +15,11 @@ firebase.initializeApp(config)
 
 const { legitEmail,legitName,legitPassword,emptyField} = require('./legit')
 
-
-//show all the registered accounts
+const gender = {
+  "M":"Male",
+  "F":"Female",
+  "U":"Unknown"
+}
 
 //sign up function
 exports.accountRegister = (req, res) =>{
@@ -83,10 +86,9 @@ exports.accountRegister = (req, res) =>{
      } else {
        return res.status(500).json({errors: errors.code})}
     })
-  }
+}
 
-
-  //sign in function
+//sign in function
 exports.login = (req,res)=>{
     const account ={
       email: req.body.email,
@@ -116,11 +118,10 @@ exports.login = (req,res)=>{
         return res.status(400).json({error: `Password and email doesn not match!`})
       } else {return res.status(501).json(errors.code)}
     })
-  }
+}
 
-  
-  //show user personal info
-  exports.getAccountInfo = (req,res )=>{
+//show user personal info
+exports.getAccountInfo = (req,res )=>{
       accountInfo ={}
       admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
         if(doc!=null){
@@ -136,11 +137,10 @@ exports.login = (req,res)=>{
       console.error(error)
       res.status(500).json({errors : error.code})
     })
-  }
+}
 
-
-  //update account personal info (can not change phone,name or email)
-  exports.updateAccountInfo =(req,res) =>{
+//update account personal info (can not change phone,name or email)
+exports.updateAccountInfo =(req,res) =>{
     const newAccountInfo = {}
 
     if (req.body.password!=null  ){
@@ -208,10 +208,10 @@ exports.login = (req,res)=>{
       console.error(error)
       return res.status(500).json(error.code)}
   )}
-    }
+}
 
-
-  exports.getAllAccounts = (req, res)=>{
+//Show all existing accounts
+exports.getAllAccounts = (req, res)=>{
     admin.firestore().collection('accounts').orderBy('name','asc').get().then(data=>{
       let account =[]
       data.forEach(doc =>{
@@ -223,15 +223,35 @@ exports.login = (req,res)=>{
       .catch(error => console.error(error))
 }
 
+//Delete an account and all the related data such as bookings,feedbacks
 exports.deleteAccount=(req,res)=>{
   admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
+    if(doc!=null){
     if (doc.data().email=req.user.email){
-      return admin.firestore().doc(`/accounts/${req.user.phone}`).delete().then(()=>
-      res.status(200).json({message: "Account deleted successfully"}))
-    }
-  })
-}
+      return admin.firestore().booking('Bookings').where("email","==",req.user.email).delete().then(()=>{
+        return admin.firestore().doc(`/accounts/${req.user.phone}`).delete().then(()=>{
+          return admin.firestore().booking('Feedbacks').where("email,==",req.user.email).delete().then(()=>{
+            let user = firebase.auth().currentUser
+            return user.delete().then(()=>{
+              res.status(200).json({message: "Account deleted successfully!"})
+            })
+          })  
+      })
+        })}
+      else{
+        return res.status(400).json({error:`Account does not exist!`})}}})
+        .then()
+        .catch((errors)=>{
+        console.error(errors)
+        if (errors.code === "auth/email-already-in-use"){
+          return res.status(400).json({email:`${newDoctor.email} has already been used!`})
+        } else {
+          return res.status(500).json({errors: errors.code})}
+        })
+      }
+     
 
+//register as a doctor
 exports.doctorRegister = (req, res) =>{
   const newDoctor ={
     name: req.body.name,
@@ -303,6 +323,7 @@ exports.doctorRegister = (req, res) =>{
   })
 }
 
+//register for managers
 exports.managerRegister = (req, res) =>{
   
   const newAccount ={
@@ -370,5 +391,52 @@ exports.managerRegister = (req, res) =>{
       return res.status(400).json({email:`${newAccount.email} has already been used!`})
    } else {
      return res.status(500).json({errors: errors.code})}
+  })
+}
+
+exports.filterByUserAge=(req,res)=>{
+  const usersList = []
+  return admin.firestore().collection('accounts').where("age","==",req.body.age).orderBy('age','asc').get().then(doc=>{
+      //get all the users with the searching age
+      doc.forEach(data=>{
+        usersList.push({
+          uId:doc.id,
+          ...data.data()
+        })
+      })
+    //If the user with the request age doesnt exist, show a error message
+    if (usersList.length===0){
+      return res.status(404).json({empty: "No account matchs your searching!"})
+    }
+    return res.json({bookingHisotry})
+  })
+  .catch(error=>{
+    //If there is an error, show the error log
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
+}
+
+exports.filterByUserGender=(req,res)=>{
+  let userGender = gender.req.body.gender
+  const usersList = []
+  return admin.firestore().collection('accounts').where("gender","==",userGender).orderBy('gender','asc').get().then(doc=>{
+      //get all the users with the searching age
+      doc.forEach(data=>{
+        usersList.push({
+          uId:doc.id,
+          ...data.data()
+        })
+      })
+    //If the user with the request gender doesnt exist, show a error message
+    if (usersList.length===0){
+      return res.status(404).json({empty: "No account matchs your searching!"})
+    }
+    return res.json({bookingHisotry})
+  })
+  .catch(error=>{
+    //If there is an error, show the error log
+    console.error(error)
+    res.status(500).json({"error":error.code})
   })
 }

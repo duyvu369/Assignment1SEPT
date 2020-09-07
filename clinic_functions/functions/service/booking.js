@@ -1,5 +1,6 @@
 const { admin } = require('../main/admin.js')
 const { legitEmail,legitName,emptyField } = require('../main/legit')
+const status = Object.freeze({"A":"Accepted", "D":"Declined", "P":"Pending"})
 
 //create a new online booking form
 exports.createBooking = (req, res) =>{
@@ -9,10 +10,11 @@ exports.createBooking = (req, res) =>{
     delete user.userId
     delete user.password
     delete user.timeCreated
-    user.time = req.body.time
+    user.date = req.body.date
+    user.time = req.body. time
     user.paymentMethod = req.body.paymentMethod
     user.service =  req.body.service
-    user.status = "Pending"
+    user.status = status.P
     const mistakes ={}
     if (emptyField(user.service)){
     mistakes.service = 'This field must not be empty'
@@ -31,9 +33,10 @@ exports.createBooking = (req, res) =>{
       })
     return admin.firestore().collection('Bookings').add(user).then((doc)=>{
       const final = user
-      final.bookingId = doc.id
-      res.status(201).json({ notification : `A ${user.service} appointment (id: ${final.bookingId}) has been created! `})
-  })
+      final.bId = doc.id
+      return admin.firestore().doc(`/Bookings/${final.bId}`).update(final).then(()=>{
+      res.status(201).json({ notification : `A ${user.service} appointment  has been created! `})
+      })})
       }
     )
     .catch((error)=>{
@@ -43,8 +46,8 @@ exports.createBooking = (req, res) =>{
   }
 
 //get all the recorded bookings data
-exports.getAllBookings = (req, res) => {
-    admin.firestore().collection('Bookings').get().then(data =>{
+exports.getAllBookingsSorted = (req, res) => {
+    admin.firestore().collection('Bookings').oderBy('name','asc').get().then(data =>{
       let bookings =[]
       data.forEach(doc =>{
         bookings.push({
@@ -78,7 +81,8 @@ exports.getBookingHistory =(req,res)=>{
   const bookingHisotry = []
   return admin.firestore().collection('Bookings').where("phone","==",req.user.phone).get().then(doc=>{
     if(doc ===null){
-      return res.status(404).json({error:"404 not found!"})
+      //If there are no bookings, show error message
+      return res.status(404).json({error:"No Bookings found!"})
     } else{
       doc.forEach(data=>{
         bookingHisotry.push({
@@ -156,17 +160,14 @@ exports.deleteBooking =(req,res)=>{
 
 exports.bookingFilterByDate =(req,res)=>{
   const bookings = []
-  return admin.firestore().collection('Bookings').where("time","==",req.body.time).get().then(doc=>{
-    if(doc ===null){
-      return res.status(404).json({error:"404 not found!"})
-    } else{
+  return admin.firestore().collection('Bookings').where("date","==",req.body.date).orderBy('date','desc').get().then(doc=>{
       doc.forEach(data=>{
         bookings.push({
           bId:doc.id,
           ...data.data()
-        })
       })
-    }
+    })
+    
     if (bookingHisotry.length===0){
       return res.status(404).json({empty: "No bookings were scheduled on that day!"})
     }
@@ -178,21 +179,23 @@ exports.bookingFilterByDate =(req,res)=>{
   })
 }
 
-exports.bookingFilterByName =(req,res)=>{
-  const bookings = []
-  return admin.firestore().collection('Bookings').where("name","==",req.body.name).get().then(doc=>{
-    if(doc ===null){
-      return res.status(404).json({error:"404 not found!"})
-    } else{
+
+exports.bookingsFilterByStatus =(req,res)=>{
+  //get the equivalent status
+  let state = status.req.body.statusCode
+  const bookingsSortedList = []
+  return admin.firestore().collection('Bookings').where("status","==",state).orderBy('timeCreated','asc').get().then(doc=>{
+      //get all the booking with the req status
       doc.forEach(data=>{
-        bookings.push({
+        bookingsSortedList.push({
           bId:doc.id,
           ...data.data()
         })
       })
-    }
-    if (bookingHisotry.length===0){
-      return res.status(404).json({empty: "No bookings were created by that person!"})
+    
+    if (bookingsSortedList.length===0){
+      //if there is no bookings, show a message
+      return res.status(404).json({empty: "No bookings match your searching!"})
     }
     return res.json({bookingHisotry})
   })
@@ -201,4 +204,5 @@ exports.bookingFilterByName =(req,res)=>{
     res.status(500).json({"error":error.code})
   })
 }
+
     

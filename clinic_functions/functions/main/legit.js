@@ -1,3 +1,13 @@
+const status = [
+  "Pending",
+  "Accepted",
+  "Declined"
+]
+exports.legitStatus =(statusCode)=>{
+  if (status.include(statusCode)){
+    return true
+  } else { return false}
+}
 //validate input fields
 exports.legitEmail=(email)=>{
     const regExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
