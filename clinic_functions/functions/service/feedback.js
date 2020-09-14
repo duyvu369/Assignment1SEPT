@@ -2,37 +2,38 @@ const { admin } = require('../main/admin.js')
 const { emptyField } = require('../main/legit')
 
 //create a new online feedback form
-exports.createFeedback = (req, res) =>{
-    var newFeedback = {}
-    admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
-    newFeedback = doc.data()
-    delete newFeedback.userId
-    delete newFeedback.password
-    delete newFeedback.timeCreated
-    newFeedback.feedbackContext = req.body.feedbackContext
-    newFeedback.rating = req.body.rating
-    const mistakes ={}
-    //If user submit an empty feedback, it will be rejected
-    if (emptyField(newFeedback.feedbackContext)){
-    mistakes.service = 'This field must not be empty'
-    } 
-    //if there are error in input by user, show the errors
-    if (Object.keys(mistakes).length > 0){
-    return res.status(400).json(mistakes)
-    }
-    //generate a new feedback by the current user
-    return admin.firestore().collection('feedbacks').add().then((doc)=>{
-      const final = user
-      final.bookingId = doc.id
-      res.status(201).json({ notification : `A ${user.service} feedback (id: ${final.bookingId}) has been submited! `})
-  })
-      }
-    )
-    .catch((error)=>{
-      console.error(error)
-      res.status(500).json({ error: 'Server ever!'})
-    })
+exports.createFeedback = (req, res) =>{  
+  var feedback = {}
+  admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
+  feedback = doc.data()
+  delete feedback.userId
+  delete feedback.password
+  delete feedback.timeCreated
+  feedback.context = req.body.context
+  feedback.rating = req.body.rating
+  const mistakes ={}
+  if (emptyField(feedback.context)){
+  mistakes.context = 'please provide your experience!'
+  } else if (emptyField(feedback.rating)){
+  mistakes.rating = 'This field must not be empty'
+  } 
+  if (Object.keys(mistakes).length > 0){
+  return res.status(400).json(mistakes)
   }
+  return admin.firestore().collection('feedbacks').add(feedback).then((doc)=>{
+    const final = feedback
+    final.fId = doc.id
+    final.bId = req.params.bId
+    return admin.firestore().doc(`/feedbacks/${final.fId}`).update(final).then(()=>{
+    res.status(201).json({ notification : `A feedback for booking ${req.params.bId} has been sent!`})
+    })})
+    }
+  )
+  .catch((error)=>{
+    console.error(error)
+    res.status(500).json({ error: 'Server ever!'})
+  })
+}
 
 //get all the feedbacks from users
 exports.getAllFeedbacks = (req, res) => {
@@ -84,7 +85,7 @@ exports.getFeedbackHistory =(req,res)=>{
     }
     //If there is no feedback created by a user, show message
     if (feedbackHisotry.length===0){
-      return res.status(404).json({empty: "No feedback has been scheduled!"})
+      return res.status(404).json({empty: "No feedback has been created!"})
     }
     //Show the feedback list
     return res.json({feedbackHisotry})
@@ -95,42 +96,9 @@ exports.getFeedbackHistory =(req,res)=>{
   })
 }
 
-exports.updateFeedbackInfo =(req,res) =>{
-  const newFeedbackInfo = {}
-
-  if (req.body.feedbackContext!=null  ){
-    newFeedbackInfo.feedbackContext = req.body.feedbackContext
-  } 
-  if (req.body.rating!=null  ){
-    newFeedbackInfo.rating = req.body.rating
-  } 
- 
-  //validate that the update info is correct
-  const mistakes ={}
-  if (newFeedbackInfo.feedbackContext!=null){
-    if((emptyField(newFeedbackInfo.feedbackContext))){
-    mistakes.feedbackContext = 'This field not be empty' 
-  }} else if (newFeedbackInfo.rating!=null){
-    if(emptyField(newFeedbackInfo.rating)){
-    mistakes.rating = 'This field can not be empty!'}}
-
-  //Show the input erros  
-  if (Object.keys(mistakes).length > 0){
-    return res.status(401).json(mistakes)
-  }
-  //Update the feedback
-  admin.firestore().doc(`/feedbacks/${req.params.fId}`).update(newFeedbackInfo).then(()=>{
-    res.json({notification: "Updated succesfully!"})
-  })
-  .catch(error=>{
-    console.error(error)
-    return res.status(500).json(error.code)
-  })
-}
-
 
 exports.deleteFeedback =(req,res)=>{
-  admin.firestore().doc(`/Feedbacks/${req.params.bId}`).get().then(doc=>{
+  admin.firestore().doc(`/feedbacks/${req.params.fId}`).get().then(doc=>{
 //check if the feedback exists
   if(!doc.exists){
     return res.status(404).json({error:"404 not found!"})
@@ -138,7 +106,7 @@ exports.deleteFeedback =(req,res)=>{
     return res.status(400).json({unauthorized:" You are not allowed to delete this document!"})
   } else {
     //delete the feedback
-    return admin.firestore().doc(`/Feedbacks/${req.params.fId}`).delete().then(()=>{
+    return admin.firestore().doc(`/feedbacks/${req.params.fId}`).delete().then(()=>{
       res.status(200).json({message:`Feedback deleted successfully!`})
     })
   .catch(error=>{
@@ -147,3 +115,21 @@ exports.deleteFeedback =(req,res)=>{
   })
   }}
   )}
+
+exports.clearFeedbackHistory =(req,res)=>{
+    var feedbackHisotry = admin.firestore().collection('feedbacks').where('phone','==',req.user.phone);
+    feedbackHisotry.get().then(querySnapshot=> {
+      // if there are feedbacks in feedback history, then delete them and send notification
+      if(querySnapshot!=null){
+    querySnapshot.forEach(doc=> {
+      doc.ref.delete()
+    })
+     res.status(400).json({message:"Feedback history has been cleared!"})}
+      // else return error message
+    else { return res.status(404).json({message:"Feedback history is empty!"})}
+  })
+    .catch(error=>{
+      console.error(error)
+      res.status(500).json({"error":error.code})
+    })
+  }

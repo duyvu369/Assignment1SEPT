@@ -1,8 +1,5 @@
-const status = [
-  "Pending",
-  "Accepted",
-  "Declined"
-]
+const { service } = require("firebase-functions/lib/providers/analytics")
+
 exports.legitStatus =(statusCode)=>{
   if (status.include(statusCode)){
     return true
@@ -16,7 +13,7 @@ exports.legitEmail=(email)=>{
   }
   
 exports.legitName = (name) =>{
-    if (name.length>0 && name.trim().length <25){
+    if (name.length>0 && name.length <25){
       return true
     } else {return false}
 }
@@ -27,7 +24,31 @@ exports.legitPassword =(password)=>{
     } else {return false}
 }
 exports.emptyField = (field)=>{
-     if(field.trim() === ""){
+     if(field === ""){
          return true
      } else {return false}
  } 
+
+ exports.checkService =(service)=>{
+   if(service!="General and specialty surgical services"||
+   service!="X-ray/Radiology services"||
+   service!="Physical therapy and rehabilitation services"||
+   service!="Home nursing services"||
+   service!="Mental health and drug treatment"||
+   service!="Laboratory services"||
+   service!="Blood services"||
+   service!="Short-term hospitalization"||
+   service!="Family planning services"||
+   service!="Nutritional counselling"){
+     return false
+   } else {return true}
+ }
+ 
+ exports.checkTime =(time)=>{
+  if(time.length>5 ||service.charAt(2)!=":"||service.charAt(0)){
+    return false
+  }
+}
+exports.checkDate =(service)=>{
+  if(service!=""){}
+}
