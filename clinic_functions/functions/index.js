@@ -4,7 +4,7 @@ const functions = require('firebase-functions')
 
 //get all the necessary functions
 const { accountRegister, login,updateAccountInfo, getAllAccounts,getAccountInfo, deleteAccount,logOut, getLoggedInStatus, staffRegister} = require('./main/account')
-const { createBooking, getBookingHistory, getBookingDetail, deleteBooking,updateAppointmentInfo, clearBookingHistory } = require('./service/booking')
+const { createBooking, getBookingHistory, getBookingDetail, deleteBooking, updateAppointmentInfo, clearBookingHistory, bookingFilterByDate, bookingsFilterByStatus } = require('./service/booking')
 const { getAllDoctors} = require('./object/doctor')
 const { authorization} = require('./main/authorization')
 const { assignBooking } = require('./object/manager')
@@ -20,6 +20,8 @@ application.get('/Bookings', authorization, getBookingHistory)
 application.delete('/Bookings/:bId', authorization, deleteBooking)
 application.put('/Bookings/:bId',authorization, updateAppointmentInfo)
 application.delete('/Booking-history',authorization, clearBookingHistory)
+application.post('Bookings-by-date',authorization, bookingFilterByDate)
+application.post('Bookings-by-status',authorization, bookingsFilterByStatus)
 
 application.get('/accounts', authorization, getAllAccounts)
 application.get('/account', authorization, getAccountInfo)
