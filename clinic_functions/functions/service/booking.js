@@ -197,8 +197,16 @@ exports.deleteBooking =(req,res)=>{
   )}
 
 exports.bookingFilterByDate =(req,res)=>{
+<<<<<<< HEAD
   const bookings = []
   return admin.firestore().collection('Bookings').where("date","==",req.body.date).orderBy('date','desc').get().then(doc=>{
+=======
+  if(req.body.date.length!=10){
+    return res.json({message:"Invalid format! DD/MM/YYYY!"})
+  }
+  const bookings = []
+  return admin.firestore().collection('Bookings').where("date","==",req.body.date).get().then(doc=>{
+>>>>>>> vu-branch
       doc.forEach(data=>{
         bookings.push({
           bId:doc.id,
@@ -206,10 +214,17 @@ exports.bookingFilterByDate =(req,res)=>{
       })
     })
     
+<<<<<<< HEAD
     if (bookingHisotry.length===0){
       return res.status(404).json({empty: "No bookings were scheduled on that day!"})
     }
     return res.json({bookingHisotry})
+=======
+    if (bookings.length===0){
+      return res.status(404).json({empty: "No bookings were scheduled on that day!"})
+    }
+    return res.json({bookings})
+>>>>>>> vu-branch
   })
   .catch(error=>{
     console.error(error)
@@ -220,7 +235,14 @@ exports.bookingFilterByDate =(req,res)=>{
 
 exports.bookingsFilterByStatus =(req,res)=>{
   //get the equivalent status
+<<<<<<< HEAD
   let state = status.req.body.statusCode
+=======
+  let state = status.req.body.status
+  if(state!="Accepted"||state!="Declined"||state!="Pending"){
+    return res.json({message:"Invalid status!"})
+  }
+>>>>>>> vu-branch
   const bookingsSortedList = []
   return admin.firestore().collection('Bookings').where("status","==",state).get().then(doc=>{
       //get all the booking with the req status
@@ -245,10 +267,17 @@ exports.bookingsFilterByStatus =(req,res)=>{
 
 exports.clearBookingHistory =(req,res)=>{
   var bookingHisotry = admin.firestore().collection('Bookings').where('phone','==',req.user.phone);
+<<<<<<< HEAD
   bookingHisotry.get().then(querySnapshot=> {
     // if there are bookings in booking history, then delete them and send notification
     if(querySnapshot!=null){
   querySnapshot.forEach(doc=> {
+=======
+  bookingHisotry.get().then(data=> {
+    // if there are bookings in booking history, then delete them and send notification
+    if(data!=null){
+  data.forEach(doc=> {
+>>>>>>> vu-branch
     doc.ref.delete()
   })
   return res.status(400).json({message:"Booking history has been cleared!"})}
