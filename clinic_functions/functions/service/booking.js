@@ -1,63 +1,69 @@
 const { admin } = require('../main/admin.js')
-const { legitEmail,legitName,emptyField } = require('../main/legit')
-
+const {emptyField, checkService, checkTime, checkDate } = require('../main/legit')
+const status = Object.freeze({"A":"Accepted", "D":"Declined", "P":"Pending"})
 
 //create a new online booking form
 exports.createBooking = (req, res) =>{
-  const newBookingForm ={
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-    time: req.body.time,
-    paymentMethod: req.body.paymentMethod,
-    service: req.body.service
-  }
-  const mistakes ={}
-  if (legitName(newBookingForm.name)===false){
-    mistakes.name = 'Name can not be empty nor exceed 25 characters!'
-  }  else if (legitEmail(newBookingForm.email)===false){
-    mistakes.email = 'Invalid email address!'
-  } else if (emptyField(newBookingForm.phone)){
-      mistakes.phone = 'This field must not be empty'
-  } else if (emptyField(newBookingForm.service)){
-    mistakes.service = 'This field must not be empty'
-  } else if (emptyField(newBookingForm.paymentMethod)){
-    mistakes.paymentMethod = 'This field must not be empty'
-  } 
-  if (Object.keys(mistakes).length > 0){
-    return res.status(400).json(mistakes)
-  }
-    return admin.firestore().collection('Bookings').add(newBookingForm).then((doc)=>{
-      const final = newBookingForm
-      final.bookingId = doc.id
-      res.status(201).json({ notification : `A ${newBookingForm.service} meeting (id: ${final.bookingId}) at ${newBookingForm.time} on ${newBookingForm.date} has been scheduled!`})
-  })
+    var user = {}
+    admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
+    user = doc.data()
+    delete user.userId
+    delete user.password
+    delete user.timeCreated
+    delete user.expertise
+    delete user.background
+    delete user.imgLink
+    delete user.position
+    user.date = req.body.date
+    user.time = req.body.time
+    user.service =  req.body.service
+    user.status = status.P
+    const mistakes ={}
+    if(!checkService(user.service)){
+      return res.json({message:"Invalid service!"})
+    }
+    if(!checkTime(user.time)){
+      return res.json({message:"Invalid time!"})
+    }
+    if(!checkDate(user.date)){
+      return res.json({message:"Invalid date!"})
+    }
+    admin.firestore().collection('Bookings').get().then(data =>{
+    let full = false
+    data.forEach(doc =>{
+      if(user.time === doc.data().time &&
+      user.date  === doc.data().date &&
+        user.service === doc.data().service){
+        full = true
+         }
+
+        })
+      if (!full){
+        return admin.firestore().collection('Bookings').add(user).then((doc)=>{
+          const final = user
+          final.bId = doc.id
+          final.doctor =''
+          final.doctorContact =''
+          return admin.firestore().doc(`/Bookings/${final.bId}`).update(final).then(()=>{
+          res.status(201).json({ message : `A ${user.service} appointment  has been created! `})
+          })})
+      } else {
+        return res.json({message:"No doctors are available at that time!"})
+      }
+      })
+   
+      }
+    )
     .catch((error)=>{
       console.error(error)
       res.status(500).json({ error: 'Server ever!'})
     })
   }
 
-//get all the recorded bookings data
-exports.getAllBookings = (req, res) => {
-    admin.firestore().collection('Bookings').get().then(data =>{
-      let bookings =[]
-      data.forEach(doc =>{
-        bookings.push({
-          bId:doc.id,
-          ...doc.data()
-        })
-      })
-      return res.json(bookings)
-    })
-    .catch(error => console.error(error))
-}
-
-
 exports.getBookingDetail=(req,res)=>{
   let bookingDetail ={}
   admin.firestore().doc(`/Bookings/${req.params.bId}`).get().then(doc=>{
-    if (doc===null){
+    if (doc==null){
       return res.status(404).json({error: "404 not found!"})
     }
     bookingDetail =doc.data()
@@ -71,28 +77,107 @@ exports.getBookingDetail=(req,res)=>{
 
 
 exports.getBookingHistory =(req,res)=>{
-  const bookingHisotry = []
+  let user = admin.firestore().doc(`/accounts/${req.user.phone}`)
+  user.get().then(doc=>{
+  //if the user is not a doctor
+  if(doc.data().position===null){
+    const appointmentList = []
   return admin.firestore().collection('Bookings').where("phone","==",req.user.phone).get().then(doc=>{
     if(doc ===null){
-      return res.status(404).json({error:"404 not found!"})
+      //If there are no bookings, show error message
+      return res.json({message:"No Bookings found!"})
     } else{
       doc.forEach(data=>{
-        bookingHisotry.push({
+        appointmentList.push({
+          bId:data.id,
+          ...data.data()
+        })
+      })
+    }
+    if (appointmentList.length===0){
+      return res.json({message: "No booking has been scheduled!"})
+    }
+    return res.json({appointmentList})
+  })
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })} 
+  //if the doctor log in
+  else if(doc.data().position==="Doctor") {
+    const appointmentList = []
+    //get all the assigned appointments
+  return admin.firestore().collection('Bookings').where("doctorContact","==",req.user.email).get().then(doc=>{
+    if(doc ===null){
+      return res.json({message:"404 not found!"})
+    } else{
+      doc.forEach(data=>{
+        appointmentList.push({
           bId:doc.id,
           ...data.data()
         })
       })
     }
-    if (bookingHisotry.length===0){
+    //If there is no appointments, it will return a message
+    if (appointmentList.length===0){
       return res.status(404).json({empty: "No booking has been scheduled!"})
     }
-    return res.json({bookingHisotry})
+    return res.json({appointmentList})
   })
   .catch(error=>{
     console.error(error)
     res.status(500).json({"error":error.code})
   })
+  }
+  else if(doc.data().position=="Manager"){
+    admin.firestore().collection('Bookings').get().then(data =>{
+      let bookings =[]
+      data.forEach(doc =>{
+        bookings.push({
+          bId:doc.id,
+          ...doc.data()
+        })
+      })
+      return res.json(bookings)
+    })
+    .catch(error => console.error(error))
+  }
+})}
+
+
+exports.updateAppointmentInfo =(req,res) =>{
+  const newAppointmentInfo = {}
+
+  if (req.body.time!=null  ){
+    newAppointmentInfo.time = req.body.time
+  } 
+  if (req.body.service!=null  ){
+    newAppointmentInfo.service = req.body.service
+  } 
+ 
+  //validate that the update info is correct
+  const mistakes ={}
+  if (newAppointmentInfo.time!=null){
+    if((emptyField(newAppointmentInfo.time))){
+    mistakes.time = 'This field not be empty' 
+  }} else if (newAppointmentInfo.service!=null){
+    if(emptyField(newAppointmentInfo.service)){
+    mistakes.service = 'This field can not be empty!'
+    }} 
+    
+  
+  if (Object.keys(mistakes).length > 0){
+    return res.status(401).json(mistakes)
+  }
+  admin.firestore().doc(`/Bookings/${req.params.bId}`).update(newAppointmentInfo).then(()=>{
+    res.json({notification: "Updated succesfully!"})
+  })
+  .catch(error=>{
+    console.error(error)
+    return res.status(500).json(error.code)
+  })
 }
+
 
 exports.deleteBooking =(req,res)=>{
   admin.firestore().doc(`/Bookings/${req.params.bId}`).get().then(doc=>{
@@ -110,3 +195,75 @@ exports.deleteBooking =(req,res)=>{
   })
   }}
   )}
+
+exports.bookingFilterByDate =(req,res)=>{
+  if(req.body.date.length!=10){
+    return res.json({message:"Invalid format! DD/MM/YYYY!"})
+  }
+  const bookings = []
+  return admin.firestore().collection('Bookings').where("date","==",req.body.date).get().then(doc=>{
+      doc.forEach(data=>{
+        bookings.push({
+          bId:doc.id,
+          ...data.data()
+      })
+    })
+    
+    if (bookings.length===0){
+      return res.status(404).json({empty: "No bookings were scheduled on that day!"})
+    }
+    return res.json({bookings})
+  })
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
+}
+
+
+exports.bookingsFilterByStatus =(req,res)=>{
+  //get the equivalent status
+  let state = status.req.body.status
+  if(state!="Accepted"||state!="Declined"||state!="Pending"){
+    return res.json({message:"Invalid status!"})
+  }
+  const bookingsSortedList = []
+  return admin.firestore().collection('Bookings').where("status","==",state).get().then(doc=>{
+      //get all the booking with the req status
+      doc.forEach(data=>{
+        bookingsSortedList.push({
+          bId:doc.id,
+          ...data.data()
+        })
+      })
+    
+    if (bookingsSortedList.length===0){
+      //if there is no bookings, show a message
+      return res.status(404).json({empty: "No bookings match your searching!"})
+    }
+    return res.json({bookingHisotry})
+  })
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
+}
+
+exports.clearBookingHistory =(req,res)=>{
+  var bookingHisotry = admin.firestore().collection('Bookings').where('phone','==',req.user.phone);
+  bookingHisotry.get().then(data=> {
+    // if there are bookings in booking history, then delete them and send notification
+    if(data!=null){
+  data.forEach(doc=> {
+    doc.ref.delete()
+  })
+  return res.status(400).json({message:"Booking history has been cleared!"})}
+    // else return error message
+  else { return res.status(404).json({message:"Booking history is empty!"})}
+})
+  .catch(error=>{
+    console.error(error)
+    res.status(500).json({"error":error.code})
+  })
+}
+    
