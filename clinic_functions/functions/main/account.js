@@ -17,15 +17,6 @@ firebase.initializeApp(config)
 
 const { legitEmail,legitName,legitPassword,emptyField} = require('./legit')
 
-<<<<<<< HEAD
-const gender = {
-  "M":"Male",
-  "F":"Female",
-  "U":"Unknown"
-}
-
-=======
->>>>>>> vu-branch
 //sign up function
 exports.accountRegister = (req, res) =>{
     const newAccount ={
@@ -73,11 +64,7 @@ exports.accountRegister = (req, res) =>{
             return firebase.auth().signInWithEmailAndPassword(accountInfo.email, accountInfo.password).then(doc =>{
               let user = firebase.auth().currentUser
               user.sendEmailVerification()
-<<<<<<< HEAD
-              return res.status(201).json({message:` A verification link has been sent to your email!, ${accountToken}`})})
-=======
               return res.json({message:` A verification link has been sent to your email!`})})
->>>>>>> vu-branch
             })
         })
       }
@@ -99,25 +86,10 @@ exports.login = (req,res)=>{
       password: req.body.password
     }
 
-<<<<<<< HEAD
-    const mistakes ={}
-  
-=======
-
->>>>>>> vu-branch
     if (legitPassword(account.password)===false){
       return res.json({message:'Password can not be empyty nor exceed 14 characters!'})
     } else if (legitEmail(account.email)===false){
-<<<<<<< HEAD
-      mistakes.email = 'Invalid email address!'
-    }
-    
-    if (Object.keys(mistakes).length >0){
-      
-      return res.status(401).json(mistakes)
-=======
       return res.json({message:'Invalid email address!'})
->>>>>>> vu-branch
     }
 
     firebase.auth().signInWithEmailAndPassword(account.email, account.password).then(doc =>{
@@ -168,48 +140,6 @@ exports.updateAccountInfo =(req,res) =>{
     if (req.body.password!=null  ){
       newAccountInfo.password = req.body.password
     } 
-<<<<<<< HEAD
-    if (req.body.phone!=null  ){
-      newAccountInfo.phone = req.body.phone
-    } 
-    if (req.body.imgLink!=null  ){
-      newAccountInfo.imgLink = req.body.imgLink
-    }
-    if(req.body.background!=null){
-      newAccountInfo.background = req.body.background
-    }
-    if(req.body.expertise!=null){
-      newAccountInfo.expertise = req.body.expertise
-    }
-    
-      
-    //validate that the update info is correct
-    const mistakes ={}
-    if (newAccountInfo.password!=null){
-      if((legitPassword(newAccountInfo.password)===false||emptyField(newAccountInfo.password))){
-      mistakes.password = 'Password can not be empyty nor exceed 14 characters!' 
-    }} else if (newAccountInfo.age!=null){
-      if(newAccountInfo.age<13||emptyField(newAccountInfo.age)){
-      mistakes.age = 'You are not old enough to sign up!'
-      }} else if (newAccountInfo.gender!=null){
-        if(emptyField(newAccountInfo.gender)){
-          mistakes.gender = 'Gender can not be empty'
-        }
-      } else if(newAccountInfo.background!=null){
-        if(emptyField(newAccountInfo.background)){
-          mistakes.background ="This field can not be empty"
-        }}
-        else if(newAccountInfo.expertise!=null){
-          if(emptyField(newAccountInfo.expertise)){
-            mistakes.expertise ="This field can not be empty"
-          }
-      }
-      
-    if (Object.keys(mistakes).length > 0){
-      return res.status(401).json(mistakes)
-    }
-    //If there are no mistakes, update the account
-=======
     if (req.body.imgLink!=null  ){
       newAccountInfo.imgLink = req.body.imgLink
     }
@@ -240,7 +170,6 @@ exports.updateAccountInfo =(req,res) =>{
       }
 
     //If there are no return res.json({message:}), update the account
->>>>>>> vu-branch
     admin.firestore().doc(`/accounts/${req.user.phone}`).update(newAccountInfo).then(()=>{
       res.json({notification: "Updated succesfully!"})
     })
@@ -267,19 +196,6 @@ exports.getAllAccounts = (req, res)=>{
 exports.deleteAccount=(req,res)=>{
   //first delete feedbacks and bookings associated with the account
   var feedbackHisotry = admin.firestore().collection('feedbacks').where('phone','==',req.user.phone)
-<<<<<<< HEAD
-  feedbackHisotry.get().then(querySnapshot=> {
-    if(querySnapshot!=null){
-  querySnapshot.forEach(doc=> {
-    doc.ref.delete()
-  })}})
-  var bookingHisotry = admin.firestore().collection('Bookings').where('phone','==',req.user.phone)
-  bookingHisotry.get().then(querySnapshot=> {
-    if(querySnapshot!=null){
-  querySnapshot.forEach(doc=> {
-    doc.ref.delete()
-  })}})
-=======
   feedbackHisotry.get().then(data=> {
     if(data!=null){
   data.forEach(doc=> {
@@ -295,17 +211,12 @@ exports.deleteAccount=(req,res)=>{
     loggedIn:false,
     token:""
   })
->>>>>>> vu-branch
   admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
     if(doc!=null){
   admin.firestore().doc(`/accounts/${req.user.phone}`).delete().then(()=>{
       let user = firebase.auth().currentUser
       return user.delete().then(()=>{
-<<<<<<< HEAD
-        res.status(200).json({message: "Account deleted successfully!"})
-=======
         res.json({message: "Account deleted successfully!"})
->>>>>>> vu-branch
       })
     })
   }
@@ -333,34 +244,6 @@ exports.staffRegister = (req, res) =>{
     imgLink:""
   }
   //validate input
-<<<<<<< HEAD
-  const mistakes ={}
-  if (legitName(newStaff.name)===false){
-    mistakes.name = 'Name can not be empty nor exceed 25 characters!'
-  } else if (legitPassword(newStaff.password)===false){
-    mistakes.password = 'Password can not be empyty nor exceed 14 characters!'
-  } else if (legitEmail(newStaff.email)===false){
-    mistakes.email = 'Invalid email address!'
-  } else if (newStaff.password != newStaff.confirmedPW){
-    mistakes.password = 'Confirmed password does not match'
-  } else if (emptyField(newStaff.phone)){
-      mistakes.phone = 'invalid phone number'
-  } else if (newStaff.companyCode!="goldenwind"){
-    mistakes.phone = 'invalid code!' 
-  } else if (newStaff.position!="Doctor" ||newStaff.position!="Manager"){
-    mistakes.position= 'Invalid! Can only be Doctor or Manager'
-  }
-  
-  if (Object.keys(mistakes).length > 0){
-    return res.status(401).json(mistakes)
-  }
-  //phone must be unique
-  var accountToken
-  let userId
-  admin.firestore().doc(`/accounts/${newStaff.phone}`).get().then(doc=>{
-    if (doc.exists){
-      res.status(402).json( {phone:`${doc.data().phone} has already been used.`})
-=======
 
   if (legitName(newStaff.name)===false){
     return res.json({message:'Name can not be empty nor exceed 25 characters!'})
@@ -383,19 +266,13 @@ exports.staffRegister = (req, res) =>{
   admin.firestore().doc(`/accounts/${newStaff.phone}`).get().then(doc=>{
     if (doc.exists){
       res.json( {phone:`${doc.data().phone} has already been used.`})
->>>>>>> vu-branch
     }
     else {
       return firebase.auth().createUserWithEmailAndPassword(newStaff.email, newStaff.password).
       then(data=>{
         userId = data.user.uid
         return data.user.getIdToken()
-<<<<<<< HEAD
-      }).then(tokenCode =>{
-        accountToken = tokenCode
-=======
       }).then(() =>{
->>>>>>> vu-branch
         const accountInfo ={
           position: newStaff.position,
           name: newStaff.name,
@@ -408,65 +285,8 @@ exports.staffRegister = (req, res) =>{
         return admin.firestore().doc(`/accounts/${newDoctor.phone}`).set(accountInfo).then(()=>{
           let user = firebase.auth().currentUser
           user.sendEmailVerification()
-<<<<<<< HEAD
-          return res.status(201).json({message:` A verification link has been sent to your email!, ${accountToken}`})})
-      })
-    }
-  })
-
-  //catching reusing email error
-  .catch((errors)=>{
-    console.error(errors)
-    if (errors.code === "auth/email-already-in-use"){
-      return res.status(400).json({email:`${newDoctor.email} has already been used!`})
-   } else {
-     return res.status(500).json({errors: errors.code})}
-  })
-}
-
-
-
-exports.filterByUserAge=(req,res)=>{
-  const usersList = []
-  return admin.firestore().collection('accounts').where("age","==",req.body.age).orderBy('age','asc').get().then(doc=>{
-      //get all the users with the searching age
-      doc.forEach(data=>{
-        usersList.push({
-          uId:doc.id,
-          ...data.data()
-        })
-      })
-    //If the user with the request age doesnt exist, show a error message
-    if (usersList.length===0){
-      return res.status(404).json({empty: "No account matchs your searching!"})
-    }
-    return res.json({bookingHisotry})
-  })
-  .catch(error=>{
-    //If there is an error, show the error log
-    console.error(error)
-    res.status(500).json({"error":error.code})
-  })
-}
-
-exports.filterByUserGender=(req,res)=>{
-  let userGender = gender.req.body.gender
-  const usersList = []
-  return admin.firestore().collection('accounts').where("gender","==",userGender).orderBy('gender','asc').get().then(doc=>{
-      //get all the users with the searching age
-      doc.forEach(data=>{
-        usersList.push({
-          uId:doc.id,
-          ...data.data()
-        })
-      })
-    //If the user with the request gender doesnt exist, show a error message
-    if (usersList.length===0){
-      return res.status(404).json({empty: "No account matchs your searching!"})
-=======
           return res.json({message:` A verification link has been sent to your email!`})})
       })
->>>>>>> vu-branch
     }
     return res.json({bookingHisotry})
   })
@@ -486,10 +306,6 @@ exports.filterByUserGender=(req,res)=>{
   })
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vu-branch
 exports.logOut= (req,res)=>{
   firebase.auth().signOut().then(()=>{
     const notLoggedIn ={
@@ -513,10 +329,6 @@ exports.getLoggedInStatus= (req,res)=>{
       })
     return res.json(state)
     })
-<<<<<<< HEAD
-    
-=======
->>>>>>> vu-branch
   
   .catch(error => console.error(error))
 }

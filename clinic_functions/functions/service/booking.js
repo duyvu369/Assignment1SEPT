@@ -193,19 +193,19 @@ exports.bookingFilterByDate =(req,res)=>{
   if(req.body.date.length!=10){
     return res.json({message:"Invalid format! DD/MM/YYYY!"})
   }
-  const bookings = []
+  const bookingsList = []
   return admin.firestore().collection('Bookings').where("date","==",req.body.date).get().then(doc=>{
       doc.forEach(data=>{
-        bookings.push({
+        bookingsList.push({
           bId:doc.id,
           ...data.data()
       })
     })
     
-    if (bookings.length===0){
+    if (bookingsList.length===0){
       return res.json({message: "No bookings were scheduled on that day!"})
     }
-    return res.json({bookings})
+    return res.json({bookingsList})
   })
   .catch(error=>{
     console.error(error)
@@ -216,25 +216,24 @@ exports.bookingFilterByDate =(req,res)=>{
 
 exports.bookingsFilterByStatus =(req,res)=>{
   //get the equivalent status
-  let state = req.body.status
-  if(state!="Accepted"||state!="Declined"||state!="Pending"){
+  if(req.body.status!="Accepted" &&req.body.status!="Declined" &&req.body.status!="Pending"){
     return res.json({message:"Invalid status!"})
   }
-  const bookingsSortedList = []
-  return admin.firestore().collection('Bookings').where("status","==",state).get().then(doc=>{
+  const bookingsList = []
+  return admin.firestore().collection('Bookings').where("status","==",req.body.status).get().then(doc=>{
       //get all the booking with the req status
       doc.forEach(data=>{
-        bookingsSortedList.push({
+        bookingsList.push({
           bId:doc.id,
           ...data.data()
         })
       })
     
-    if (bookingsSortedList.length===0){
+    if (bookingsList.length===0){
       //if there is no bookings, show a message
       return res.json({message: "No bookings match your searching!"})
     }
-    return res.json({bookingHisotry})
+    return res.json({bookingsList})
   })
   .catch(error=>{
     console.error(error)

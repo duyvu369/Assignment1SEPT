@@ -19,8 +19,8 @@ exports.assignBooking = (req,res) =>{
   
 
     //validate that the update info is correct
-    if (newStatus.status!="Accepted"||
-    newStatus.status!="Declined"||
+    if (newStatus.status!="Accepted"&&
+    newStatus.status!="Declined"&&
     newStatus.status!="Pending"){
       return res.json({message:"Invalid status!"})
     }
