@@ -99,11 +99,9 @@ exports.deleteFeedback =(req,res)=>{
 //check if the feedback exists
   if(!doc.exists){
     return res.json({message:"404 not found!"})
-  } else if(doc.data().email!=req.user.email){
-    return res.json({message:" You are not allowed to delete this document!"})
-  } else {
+  }  else {
     //delete the feedback
-    return admin.firestore().doc(`/feedbacks/${req.params.fId}`).delete().then(()=>{
+    return admin.firestore().doc(`/feedbacks/${req.query.fId}`).delete().then(()=>{
       res.json({message:`Feedback deleted successfully!`})
     })
   .catch(error=>{

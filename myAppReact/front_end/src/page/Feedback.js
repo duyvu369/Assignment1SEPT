@@ -11,10 +11,12 @@ class Feedback extends Component {
             token:'',
             context:"",
             rating:"",
+            fid:"",
             msg:""
         }
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit= this.handleSubmit.bind(this)
+    this.handleDelete = this.handleDelete.bind(this)
     }
     
     componentDidMount(){
@@ -52,8 +54,26 @@ class Feedback extends Component {
         [event.target.name]: event.target.value
     })
     }
+    handleDelete(event){
+        console.log(this.state)
+        axios.delete('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Feedback',{
+          params:{fId:this.state.fId},
+          headers:{
+            'Authorization':`${this.state.token}`
+          }
+        }
+        ).then(res=>{
+          this.setState({
+            msg:res.data.message
+          })
+        })
+        .catch(error=>{
+          console.log(error)
+        })
+        event.preventDefault()
+      }
     //Filter by date for manager
-    handleSubmit(event) {
+    handleSubmit() {
         const { token, context, rating} = this.state
         axios.post('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Feedback', {
           context:context,
@@ -113,6 +133,7 @@ class Feedback extends Component {
                     {items.map(item=>(
                     <div className="card" key ={item.fId}>
                     <ul>
+                    <li>ID: {item.fId}</li> 
                     <li>Context: {item.context}</li> 
                     <li>Rating: {item.rating}</li>  
                     <li> Submitted by: {item.name}</li>         
@@ -121,7 +142,18 @@ class Feedback extends Component {
                     </div>  
                     ))}
                     <h3>{msg}</h3>  
-                   
+                    <form onSubmit={this.handleDelete} >
+                    Delete a Feedback:
+                    ID: 
+                    <input
+                    type="text"
+                    name="fId"
+                    value={this.state.fId}
+                    placeholder="Enter the ID of the booking"
+                    onChange={this.handleChange}
+                    required
+                    /> <button type="submit">Delete</button>
+                    </form>
             </div>} else{
                 return <div>
                     
@@ -129,6 +161,7 @@ class Feedback extends Component {
                     {items.map(item=>(
                     <div className="card" key ={item.fId}>
                     <ul>
+                    <li>ID: {item.fId}</li> 
                     <li>Context: {item.context}</li> 
                     <li>Rating: {item.rating}</li>  
                     <li> Submitted by: {item.name}</li>         

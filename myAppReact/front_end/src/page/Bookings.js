@@ -22,6 +22,7 @@ class Bookings extends Component {
     this.handleFilterByDate = this.handleFilterByDate.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleAssign = this.handleAssign.bind(this)
+    this.handleDelete = this.handleDelete.bind(this)
     }
     
     componentDidMount(){
@@ -142,6 +143,24 @@ class Bookings extends Component {
         })
         event.preventDefault()
       }
+      handleDelete(event){
+        console.log(this.state)
+        axios.delete('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Booking',{
+          params:{bId:this.state.bId},
+          headers:{
+            'Authorization':`${this.state.token}`
+          }
+        }
+        ).then(res=>{
+          this.setState({
+            msg:res.data.message
+          })
+        })
+        .catch(error=>{
+          console.log(error)
+        })
+        event.preventDefault()
+      }
     render() {
         
         var {loggedIn, items,position} = this.state  
@@ -155,6 +174,7 @@ class Bookings extends Component {
             //If the user is a manager, show the filters
             if(position==="Manager"){return <div>
                 <h3>Your appointment history:</h3>
+                <h3>{this.state.msg}</h3> 
                     <form onSubmit={this.handleFilterByDate} >
 
                     Filter by date: 
@@ -218,6 +238,18 @@ class Bookings extends Component {
                     /> 
                     <button type="submit">Assign</button>
                     </form>
+                    <form onSubmit={this.handleDelete} >
+                    Delete a booking:
+                    ID: 
+                    <input
+                    type="text"
+                    name="bId"
+                    value={this.state.bId}
+                    placeholder="Enter the ID of the booking"
+                    onChange={this.handleChange}
+                    required
+                    /> <button type="submit">Delete</button>
+                    </form>
                     {items.map(item=>(
                     <div className="card" key ={item.bId}>
                       
@@ -229,28 +261,43 @@ class Bookings extends Component {
                     <li>Doctor: {item.doctor}</li>
                     <li>Base fee: {item.baseFee} VND</li>
                     <li>Doctor contact: {item.doctorContact}</li>
+
+                   
+                    </ul>
                     
-                    </ul>
-                      
                     </div>  
+                    
                     ))}
-                    <h3>{this.state.msg}</h3>  
+                     
                     </ul>
+                   
             </div>} else{
                 return <div>
+                    <h3>Delete a booking:</h3>
+                    <form onSubmit={this.handleDelete} >
                     
+                    ID: 
+                    <input
+                    type="text"
+                    name="bId"
+                    placeholder="Enter the ID of the booking"
+                    value={this.state.bId}
+                    onChange={this.handleChange}
+                    required
+                    /> <button type="submit">Delete</button>
+                    </form>
                     {items.map(item=>(
                     <div className="card" key ={item.bId}>  
                     <h3>Service: {item.service}</h3> 
                     <ul>
-                      
+                    <li>ID: {item.bId}</li>
                     <li>Time: {item.time} {item.date}</li>
                     <li>Status: {item.status}</li>
                     <li>Doctor: {item.doctor}</li>
                     <li>Base fee: {item.baseFee} VND </li>
                     <li>Doctor contact: {item.doctorContact}</li>
                     </ul>
-                
+                    
                     <h3>{this.state.msg}</h3> 
                 </div>
                   ))}

@@ -174,13 +174,11 @@ exports.updateAppointmentInfo =(req,res) =>{
 
 
 exports.deleteBooking =(req,res)=>{
-  admin.firestore().doc(`/Bookings/${req.params.bId}`).get().then(doc=>{
+  admin.firestore().doc(`/Bookings/${req.query.bId}`).get().then(doc=>{
   if(!doc.exists){
     return res.json({message:"404 not found!"})
-  } else if(doc.data().email!=req.user.email){
-    return res.json({message:" You are not allowed to delete this document!"})
   } else {
-    return admin.firestore().doc(`/Bookings/${req.params.bId}`).delete().then(()=>{
+    return admin.firestore().doc(`/Bookings/${req.query.bId}`).delete().then(()=>{
       res.json({message:`Booking deleted successfully!`})
     })
   .catch(error=>{
