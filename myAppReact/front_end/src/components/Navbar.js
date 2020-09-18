@@ -40,6 +40,7 @@ class Navbar extends Component {
                 <Button color = "inherit" component = {Link} to="/login">Login</Button>
                 <Button color = "inherit" component = {Link} to="/register">Register</Button>
                 <Button color = "inherit" component = {Link} to="/staffRegister">Register as a hospital staff</Button>
+                <Button color = "inherit" component = {Link} to="/feedback">Feedbacks</Button>
                 <Button color = "inherit" component = {Link} to="/logout">Log out</Button>
                 </Fragment>
             </Toolbar>
@@ -57,6 +58,7 @@ class Navbar extends Component {
                 <Button color = "inherit" component = {Link} to="/login">Login</Button>
                 <Button color = "inherit" component = {Link} to="/register">Register</Button>
                 <Button color = "inherit" component = {Link} to="/staffRegister">Register as a hospital staff</Button>
+                <Button color = "inherit" component = {Link} to="/feedback">Feedbacks</Button>
                 </Fragment>
             </Toolbar>
             </AppBar>

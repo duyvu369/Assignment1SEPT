@@ -1,6 +1,4 @@
 const { admin } = require('../main/admin')
-const {emptyField,legitEmail, legitStatus } = require('../main/legit')
-const status = Object.freeze({"A":"Accepted", "D":"Declined", "P":"Pending"})
 
 exports.assignBooking = (req,res) =>{
     var manager = {}
@@ -22,17 +20,12 @@ exports.assignBooking = (req,res) =>{
     if (newStatus.status!="Accepted"&&
     newStatus.status!="Declined"&&
     newStatus.status!="Pending"){
-      return res.json({message:"Invalid status!"})
-    }
-     else if (emptyField(newStatus.doctor)){
-      mistakes.doctor = 'This field can not be empty!'
-    } else if (!legitEmail(newStatus.doctorContact)){
-        mistakes.doctorContact = 'Invalid email'
-      }
+      return res.json({message:"Invalid status!"})}
+    
     
       
-    admin.firestore().doc(`/Bookings/${req.params.bId}`).update(newStatus).then(()=>{
-      res.json({notification: "Assigned succesfully!"})
+    admin.firestore().doc(`/Bookings/${req.query.bId}`).update(newStatus).then(()=>{
+      res.json({message: "Assigned succesfully!"})
     })
     .catch(error=>{
       console.error(error)

@@ -8,7 +8,6 @@ class Logout extends Component {
             token:"",
             msg:""
         }
-        this.handleChange = this.handleChange.bind(this)
     }
     
 componentDidMount(){
@@ -38,11 +37,7 @@ componentDidMount(){
     })
     }
 
-    handleChange(event) {
-    this.setState({
-        [event.target.name]: event.target.value
-    })
-    }
+    
     render() {
         var msg = this.state.msg
         return (

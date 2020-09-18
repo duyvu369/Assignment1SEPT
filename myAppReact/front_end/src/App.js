@@ -12,6 +12,7 @@ import Book from './page/Book'
 import Profile from "./page/Profile"
 import Logout from "./page/Logout"
 import axios from 'axios'
+import Feedback from "./page/Feedback"
 class App extends Component {
   constructor(){
     super()
@@ -45,6 +46,7 @@ class App extends Component {
           <Route exact path="/doctors" component={Doctors} />
           <Route exact path="/book" component={Book} />
           <Route exact path="/bookings" component={Bookings} />
+          <Route exact path="/feedback" component={Feedback} />
           <Route exact path="/logout" component={Logout} />
         </Switch>
     </Router>
@@ -60,6 +62,7 @@ class App extends Component {
       <Route exact path="/register" component={Register} />
       <Route exact path="/staffRegister" component={StaffRegister} />
       <Route exact path="/doctors" component={Doctors} />
+      <Route exact path="/feedback" component={Feedback} />
       </Switch>
   </Router>
   </div>

@@ -11,11 +11,17 @@ class Bookings extends Component {
             token:'',
             position:"",
             date:"",
-            status:""
+            status:"",
+            doctor:"",
+            doctorContact:"",
+            bId:"",
+            bookingStatus:"",
+            msg:""
         }
     this.handleFilterByStatus = this.handleFilterByStatus.bind(this)
     this.handleFilterByDate = this.handleFilterByDate.bind(this)
     this.handleChange = this.handleChange.bind(this)
+    this.handleAssign = this.handleAssign.bind(this)
     }
     
     componentDidMount(){
@@ -36,7 +42,7 @@ class Bookings extends Component {
     .then(response=> {
     
         this.setState({
-            items: response.data
+            items: response.data.appointmentList
         })
         console.log(this.state)
         //Get the position of the user
@@ -119,7 +125,23 @@ class Bookings extends Component {
           });
         event.preventDefault()
       }
-
+      handleAssign(event){
+        const {bId,bookingStatus,doctor,doctorContact} = this.state
+        axios.put('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Booking',{
+          doctor:doctor,doctorContact:doctorContact, status:bookingStatus
+        },{
+          params:{
+            bId:bId
+          },
+          headers:{
+            'Authorization':`${this.state.token}`
+          }
+        }).then(res=>{
+          this.setState({
+            msg:res.data.message})
+        })
+        event.preventDefault()
+      }
     render() {
         
         var {loggedIn, items,position} = this.state  
@@ -155,23 +177,64 @@ class Bookings extends Component {
                     onChange={this.handleChange}
                     /> <button type="submit">Search</button>
                     </form>
+
                     <ul>
-                    
+                      <h3>Assign Form</h3>
+                    <form onSubmit={this.handleAssign} >
+
+                    Appointment ID:
+                    <input
+                    type="text"
+                    name="bId"
+                    onChange={this.handleChange}
+                    required
+                    /> 
+                    <br></br>
+                    Status:
+                    <input
+                    type="text"
+                    name="bookingStatus"
+                    value={this.state.bookingStatus}
+                    onChange={this.handleChange}
+                    required
+                    /> 
+                    <br></br>
+                    Doctor: 
+                    <input
+                    type="text"
+                    name="doctor"
+                    value={this.state.doctor}
+                    onChange={this.handleChange}
+                    required
+                    /> 
+                    <br></br>
+                    Doctor contact info:
+                    <input
+                    type="text"
+                    name="doctorContact"
+                    value={this.state.doctorContact}
+                    onChange={this.handleChange}
+                    required
+                    /> 
+                    <button type="submit">Assign</button>
+                    </form>
                     {items.map(item=>(
-                    <div className="card" key ={item.bId}>  
+                    <div className="card" key ={item.bId}>
+                      
                     <h3>Service: {item.service}</h3> 
                     <ul>
+                    <li>ID: {item.bId}</li>  
                     <li>Time: {item.time} {item.date}</li>
                     <li>Status: {item.status}</li>
                     <li>Doctor: {item.doctor}</li>
-                    <li>Base fee: {item.baseFee}</li>
+                    <li>Base fee: {item.baseFee} VND</li>
                     <li>Doctor contact: {item.doctorContact}</li>
+                    
                     </ul>
-                
-                    <p>{item.msg}</p>    
+                      
                     </div>  
                     ))}
-                    
+                    <h3>{this.state.msg}</h3>  
                     </ul>
             </div>} else{
                 return <div>
@@ -180,14 +243,15 @@ class Bookings extends Component {
                     <div className="card" key ={item.bId}>  
                     <h3>Service: {item.service}</h3> 
                     <ul>
+                      
                     <li>Time: {item.time} {item.date}</li>
                     <li>Status: {item.status}</li>
                     <li>Doctor: {item.doctor}</li>
-                    <li>Base fee: {item.baseFee}</li>
+                    <li>Base fee: {item.baseFee} VND </li>
                     <li>Doctor contact: {item.doctorContact}</li>
                     </ul>
                 
-                    <p>{item.msg}</p> 
+                    <h3>{this.state.msg}</h3> 
                 </div>
                   ))}
                 </div>

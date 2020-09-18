@@ -1,4 +1,4 @@
-const {legitEmail, legitPassword,legitName, emptyField} = require('../main/legit')
+const {legitEmail, legitPassword,legitName, emptyField, priceCalculator} = require('../main/legit')
 
 test('Properly check user email', () =>{
     expect(legitEmail("a;kjdlks;;")).toBe(false)
@@ -22,3 +22,8 @@ test('Properly check empty field', () =>{
     expect(emptyField("12324324")).toBe(false)
     expect(emptyField("a")).toBe(false)
 })
+test('Charge calculation works properly', () =>{
+    expect(priceCalculator("Physical therapy and rehabilitation services")).toBe(800000)
+    expect(priceCalculator("Mental health and drug treatment")).toBe(950000)
+})
+

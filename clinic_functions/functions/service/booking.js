@@ -1,5 +1,5 @@
 const { admin } = require('../main/admin.js')
-const {emptyField, checkService, checkTime, checkDate } = require('../main/legit')
+const {emptyField, checkService, priceCalculator } = require('../main/legit')
 
 //create a new online booking form
 exports.createBooking = (req, res) =>{
@@ -16,15 +16,16 @@ exports.createBooking = (req, res) =>{
     user.date = req.body.date
     user.time = req.body.time
     user.service =  req.body.service
-    user.status = status.P
+    user.status = "Pending"
+    user.baseFee =priceCalculator(user.service)
     if(!checkService(user.service)){
       return res.json({message:"Invalid service!"})
     }
-    if(!checkTime(user.time)){
-      return res.json({message:"Invalid time!"})
+    if (user.time.length>5){
+      return res.json({message:"Invalid format! 00:00"})
     }
-    if(!checkDate(user.date)){
-      return res.json({message:"Invalid date!"})
+    if (user.date.length>10){
+      return res.json({message:"Invalid format! XX/MM/YYYY"})
     }
     admin.firestore().collection('Bookings').get().then(data =>{
     let full = false
@@ -129,14 +130,14 @@ exports.getBookingHistory =(req,res)=>{
   }
   else if(doc.data().position==="Manager"){
     admin.firestore().collection('Bookings').get().then(data =>{
-      let bookings =[]
+      let appointmentList =[]
       data.forEach(doc =>{
-        bookings.push({
+        appointmentList.push({
           bId:doc.id,
           ...doc.data()
         })
       })
-      return res.json(bookings)
+      return res.json({appointmentList})
     })
     .catch(error => console.error(error))
   }
@@ -258,4 +259,3 @@ exports.clearBookingHistory =(req,res)=>{
     res.status(500).json({"error":error.code})
   })
 }
-    

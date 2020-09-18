@@ -35,6 +35,9 @@ class Login extends Component {
       
   })
   .catch(error=>{
+    this.setState({
+      msg:"Something wrong happened! Please try again later!"
+    })
     console.log("Login error", error.code)
   })
   event.preventDefault()
