@@ -82,50 +82,37 @@ exports.getBookingHistory =(req,res)=>{
   if(doc.data().position===undefined){
     const appointmentList = []
   return admin.firestore().collection('Bookings').where("phone","==",req.user.phone).get().then(doc=>{
-    if(doc ===null){
-      //If there are no bookings, show error message
-      return res.json({message:"No Bookings found!"})
-    } else{
       doc.forEach(data=>{
         appointmentList.push({
           bId:data.id,
           ...data.data()
         })
       })
-    }
-    if (appointmentList.length===0){
-      return res.json({message: "No booking has been scheduled!"})
-    }
+    
     return res.json({appointmentList})
   })
   .catch(error=>{
     console.error(error)
-    res.status(500).json({"error":error.code})
+    res.status(500).json({"message":error.code})
   })} 
   //if the doctor log in
   else if(doc.data().position==="Doctor") {
     const appointmentList = []
     //get all the assigned appointments
   return admin.firestore().collection('Bookings').where("doctorContact","==",req.user.email).get().then(doc=>{
-    if(doc ===null){
-      return res.json({message:"404 not found!"})
-    } else{
+
       doc.forEach(data=>{
         appointmentList.push({
           bId:doc.id,
           ...data.data()
         })
       })
-    }
     //If there is no appointments, it will return a message
-    if (appointmentList.length===0){
-      return res.json({empty: "No booking has been scheduled!"})
-    }
     return res.json({appointmentList})
   })
   .catch(error=>{
     console.error(error)
-    res.status(500).json({"error":error.code})
+    res.status(500).json({"message":error.code})
   })
   }
   else if(doc.data().position==="Manager"){
@@ -139,7 +126,8 @@ exports.getBookingHistory =(req,res)=>{
       })
       return res.json({appointmentList})
     })
-    .catch(error => console.error(error))
+    .catch(error => 
+      console.error(error))
   }
 })}
 

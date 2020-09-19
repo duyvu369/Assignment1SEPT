@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch,Redirect,PublicHomePage } from 'react-router-dom'
 import './App.css'
 import Home from "./Home"
 import Register from "./page/Register"
@@ -57,7 +57,7 @@ class App extends Component {
       <Router>
     <Navbar />
       <Switch>
-      <Route exact path="/" component={Home} />
+      <Route exact path="/" component={Home}/> 
       <Route exact path="/login" component={Login} />
       <Route exact path="/register" component={Register} />
       <Route exact path="/staffRegister" component={StaffRegister} />

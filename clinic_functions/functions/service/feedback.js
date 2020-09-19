@@ -69,21 +69,12 @@ exports.getFeedbackDetail=(req,res)=>{
 exports.getFeedbackHistory =(req,res)=>{
   const feedbackHisotry = []
   return admin.firestore().collection('feedbacks').where("phone","==",req.user.phone).get().then(doc=>{
-    if(doc ===null){
-    //if the feedback does not exist, show error message
-      return res.json({message:"404 not found!"})
-    } else{
       doc.forEach(data=>{
         feedbackHisotry.push({
           fId:doc.id,
           ...data.data()
         })
       })
-    }
-    //If there is no feedback created by a user, show message
-    if (feedbackHisotry.length===0){
-      return res.json({message: "No feedback has been created!"})
-    }
     //Show the feedback list
     return res.json({feedbackHisotry})
   })

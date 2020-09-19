@@ -35,6 +35,7 @@ class Doctors extends Component {
                       <div className="card" key ={item.dId}>  <h1>Dr {item.name}</h1> 
                       <img src={item.imgLink} width="300px" height="300px"></img>
                       <p>Expertise: {item.expertise}</p>
+                      <p>Work email: {item.email}</p>
                       <p>Background: {item.background}</p> </div>  
                     ))}
                     

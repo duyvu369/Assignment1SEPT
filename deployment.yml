@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: baitap3
+  labels:
+    #Project ID
+    app: online-clinic-booking-system
+spec:
+  #Run two instances of our application
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: online-clinic-booking-system
+    spec:
+      #Container details
+      containers:
+        - name: node-app
+          image: gcr.io/online-clinic-booking-system/node-app:0.0.1
+          imagePullPolicy: Always
+          #Ports to expose
+          ports:
+          - containerPort: 8080

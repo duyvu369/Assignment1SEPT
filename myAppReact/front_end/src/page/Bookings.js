@@ -174,7 +174,7 @@ class Bookings extends Component {
             //If the user is a manager, show the filters
             if(position==="Manager"){return <div>
                 <h3>Your appointment history:</h3>
-                <h3>{this.state.msg}</h3> 
+                
                     <form onSubmit={this.handleFilterByDate} >
 
                     Filter by date: 
@@ -250,6 +250,7 @@ class Bookings extends Component {
                     required
                     /> <button type="submit">Delete</button>
                     </form>
+                    <h3>{this.state.msg}</h3> 
                     {items.map(item=>(
                     <div className="card" key ={item.bId}>
                       

@@ -1,5 +1,6 @@
 const { service } = require("firebase-functions/lib/providers/analytics")
 
+//This file contain all of the validation functions
 exports.legitStatus =(statusCode)=>{
   if (status.include(statusCode)){
     return true

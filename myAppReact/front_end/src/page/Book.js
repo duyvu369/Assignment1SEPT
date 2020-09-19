@@ -76,19 +76,55 @@ class Book extends Component {
         <div id="formContent">
         <h2 className="active underlineHover">Booking form </h2>
         <br></br>
-        <h3>Our services:</h3>
-        <ul>
-        <li>General and specialty surgical services</li>
-        <li>X-ray/Radiology services</li>
-        <li>Physical therapy and rehabilitation services</li>
-        <li>Home nursing services</li>
-        <li>Mental health and drug treatment</li>
-        <li>Laboratory services</li>
-        <li>Blood services</li>
-        <li>Short-term hospitalization</li>
-        <li>Family planning services</li>
-        <li>Nutritional counselling</li>
-        </ul>
+        <h3>Our services:</h3>(Base fee = 150000VND)
+        
+         <tr>
+            <td><h4>Service name</h4></td>
+            <td><h4>Charge(Base fee not incluced)</h4></td>
+         </tr>
+         
+         <tr>
+            <td>General and specialty surgical services</td>
+            <td>1500000 VND </td>
+         </tr>
+         <tr>
+            <td>X-ray/Radiology services</td>
+            <td>2800000 VND </td>
+         </tr>
+         <tr>
+            <td>Physical therapy and rehabilitation services</td>
+            <td>650000 VND </td>
+         </tr>
+         <tr>
+            <td>Home nursing services</td>
+            <td>600000 VND </td>
+         </tr>
+         <tr>
+            <td>Mental health and drug treatment</td>
+            <td>800000 VND </td>
+         </tr>
+         <tr>
+            <td>Laboratory services</td>
+            <td>100000 VND </td>
+         </tr>
+         <tr>
+            <td>Blood services</td>
+            <td>400000 VND </td>
+         </tr>
+         <tr>
+            <td>Short-term hospitalization</td>
+            <td>900000 VND </td>
+         </tr>
+         <tr>
+            <td>Family planning services</td>
+            <td>385000 VND </td>
+         </tr>
+         <tr>
+            <td>Nutritional counselling</td>
+            <td>280000 VND </td>
+         </tr>
+
+        
         <form onSubmit={this.handleSubmit} >
 
           <input

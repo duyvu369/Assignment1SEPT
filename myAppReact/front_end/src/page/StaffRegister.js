@@ -3,8 +3,8 @@ import axios from "axios";
 import '../App.css'
 
 class StaffRegister extends Component {
-  constructor(props) {
-    super(props)
+  constructor() {
+    super()
     
     this.state = {
       email: "",
@@ -12,8 +12,8 @@ class StaffRegister extends Component {
       confirmedPW: "",
       name:"",
       phone: "",
-      companyCode: null,
-      position:null,
+      companyCode: "",
+      position:"",
       msg: ''
       
     }
@@ -31,7 +31,7 @@ class StaffRegister extends Component {
   handleSubmit(event) {
     const { email, password, confirmedPW, phone, name,companyCode,position } = this.state;
     
-    axios.post('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/register', {
+    axios.post('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/staffRegister', {
       name: name,
       email: email,
       password: password,
@@ -41,15 +41,11 @@ class StaffRegister extends Component {
       position:position
     })
       .then(response => {
-        if(response.status===201){
           this.setState({
-            msg:"Your account has been created successfully!"
+            msg: response.data.message
           }) 
-        }else{
-          
-            console.log(response)}
-        }
-      )
+
+        })
       .catch((error) => {
         console.log(error)
         this.setState({
@@ -125,10 +121,10 @@ class StaffRegister extends Component {
           />
           <input
             type="text"
-            name="postion"
+            name="position"
             class ="fadeIneighth"
             placeholder="Your position"
-            value={this.state.companyCode}
+            value={this.state.position}
             onChange={this.handleChange}
             required
           />

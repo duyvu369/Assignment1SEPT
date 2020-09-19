@@ -26,7 +26,7 @@ exports.accountRegister = (req, res) =>{
       password: req.body.password,
       confirmedPW: req.body.confirmedPW
     }
-    //validate input
+    //validate input, If the input does not meet the requirment, respond with a message!
     if (legitName(newAccount.name)===false){
       return res.json({message:'Name can not be empty nor exceed 25 characters!'})
     } else if (legitPassword(newAccount.password)===false){
@@ -46,8 +46,8 @@ exports.accountRegister = (req, res) =>{
         res.json( {message:`${doc.data().phone} has already been used.`})
       }
       else {
-        return firebase.auth().createUserWithEmailAndPassword(newAccount.email, newAccount.password).
-        then(data=>{
+        return firebase.auth().createUserWithEmailAndPassword(newAccount.email, newAccount.password)
+        .then(data=>{
           userId = data.user.uid
           return data.user.getIdToken()
         }).then(() =>{
@@ -60,16 +60,16 @@ exports.accountRegister = (req, res) =>{
             timeCreated: new Date().toISOString(),
             userId
           }
-          return admin.firestore().doc(`/accounts/${newAccount.phone}`).set(accountInfo).then(()=>{
-            return firebase.auth().signInWithEmailAndPassword(accountInfo.email, accountInfo.password).then(doc =>{
+          return admin.firestore().doc(`/accounts/${accountInfo.phone}`).set(accountInfo).then(()=>{
+              //Send the verification link to the current user.
               let user = firebase.auth().currentUser
               user.sendEmailVerification()
-              return res.json({message:` A verification link has been sent to your email!`})})
-            })
+              return res.status(201).json({message:` A verification link has been sent to your email!`})})
+            
         })
       }
     })
-    //catching reusing email error
+    //If the user use the same email to create more than one account, show an error message.
     .catch((errors)=>{
       console.error(errors)
       if (errors.code === "auth/email-already-in-use"){
@@ -85,15 +85,14 @@ exports.login = (req,res)=>{
       email: req.body.email,
       password: req.body.password
     }
-
+    //Validate input field
     if (legitPassword(account.password)===false){
       return res.json({message:'Password can not be empyty nor exceed 14 characters!'})
     } else if (legitEmail(account.email)===false){
       return res.json({message:'Invalid email address!'})
     }
-
+    //Sign the user in and return a token to the  database, change the login status to True
     firebase.auth().signInWithEmailAndPassword(account.email, account.password).then(doc =>{
-      
       return doc.user.getIdToken()
     }).then(tokenCode =>{
       const loggedIn ={
@@ -101,15 +100,15 @@ exports.login = (req,res)=>{
         token:tokenCode
       }
     admin.firestore().doc(`/Status/loggedInStatus`).update(loggedIn).then(()=>{
-      return res.json({message:"Login succesfully!",
+      //Show success message
+      return res.status(202).json({message:"Login succesfully!",
     token:loggedIn.token})
-    }
-    )
+    })
     })
     .catch(errors =>{
       console.error(errors)
       if (errors.code === "auth/wrong-password"){
-        return res.status(400).json({error: `Password and email doesn not match!`})
+        return res.status(400).json({message: `Password and email doesn not match!`})
       } else {return res.status(501).json(errors.code)}
     })
 }
@@ -117,6 +116,7 @@ exports.login = (req,res)=>{
 //show user personal info
 exports.getAccountInfo = (req,res )=>{
       accountInfo ={}
+      //Get the account info from firesbase cloudstore
       admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
         if(doc!=null){
           accountInfo = doc.data()
@@ -125,6 +125,7 @@ exports.getAccountInfo = (req,res )=>{
           delete accountInfo.confirmedPW
         } else{
           return res.json({message:"404 not found"})}
+          //Show it to the users
         return res.json({accountInfo})
     })
     .catch(error=>{
@@ -136,7 +137,9 @@ exports.getAccountInfo = (req,res )=>{
 //update account personal info (can not change phone,name or email)
 exports.updateAccountInfo =(req,res) =>{
     const newAccountInfo = {}
-    //Update only the fields that users want to update
+
+    //Update only the fields that users want to update, user can only change their password, not their name, email or phone
+    //Doctors can change background and expertise as well as selfie picture
     if (req.body.password!=null  ){
       newAccountInfo.password = req.body.password
     } 
@@ -169,9 +172,11 @@ exports.updateAccountInfo =(req,res) =>{
           }
       }
 
-    //If there are no return res.json({message:}), update the account
+    //If there are no errors, update the account
+    var user = firebase.auth().currentUser
+    user.updatePassword(newAccountInfo.password)
     admin.firestore().doc(`/accounts/${req.user.phone}`).update(newAccountInfo).then(()=>{
-      res.json({notification: "Updated succesfully!"})
+      res.json({message: "Updated succesfully!"})
     })
     .catch(error=>{
       console.error(error)
@@ -181,15 +186,20 @@ exports.updateAccountInfo =(req,res) =>{
 
 //Show all existing accounts
 exports.getAllAccounts = (req, res)=>{
+  //get all the existing accounts in the account collection from the firebase cloudstore
     admin.firestore().collection('accounts').orderBy('name','asc').get().then(data=>{
       let accounts =[]
       data.forEach(doc =>{
         accounts.push({
           ...doc.data()})
         })
-        return res.json(accounts)
+        //Respond with an array of json objects
+        return res.json({accounts})
       })
-      .catch(error => console.error(error))
+      .catch(error => {
+        console.error(error)
+        return res.status(500).json({message:"Something went wrong! please try again!"})
+      })
 }
 
 //Delete an account and all the related data such as bookings,feedbacks
@@ -207,10 +217,12 @@ exports.deleteAccount=(req,res)=>{
   data.forEach(doc=> {
     doc.ref.delete()
   })}})
+  //Update the login status and delete the token
   admin.firestore().doc(`/Status/loggedInStatus`).update({
     loggedIn:false,
     token:""
   })
+
   admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
     if(doc!=null){
   admin.firestore().doc(`/accounts/${req.user.phone}`).delete().then(()=>{
@@ -229,7 +241,7 @@ exports.deleteAccount=(req,res)=>{
   }
      
 
-//register as a doctor
+//register as a doctor or manager
 exports.staffRegister = (req, res) =>{
   const newStaff ={
     name: req.body.name,
@@ -238,10 +250,16 @@ exports.staffRegister = (req, res) =>{
     password: req.body.password,
     confirmedPW: req.body.confirmedPW,
     companyCode: req.body.companyCode,
-    service: req.body.service,
-    background: req.body.background,
-    position: req.body.position,
-    imgLink:""
+    position: req.body.position
+  }
+  if (req.body.imgLink!=null  ){
+    newStaff.imgLink = req.body.imgLink
+  }
+  if(req.body.background!=null){
+    newStaff.background = req.body.background
+  }
+  if(req.body.expertise!=null){
+    newStaff.expertise = req.body.expertise
   }
   //validate input
 
@@ -257,7 +275,7 @@ exports.staffRegister = (req, res) =>{
       return res.json({message:'invalid phone number'})
   } else if (newStaff.companyCode!="goldenwind"){
     return res.json({message:'invalid code!' })
-  } else if (newStaff.position!="Doctor" ||newStaff.position!="Manager"){
+  } else if (newStaff.position!="Doctor" &&newStaff.position!="Manager"){
     return res.json({message:'Invalid! Can only be Doctor or Manager'})
   }
 
@@ -268,27 +286,20 @@ exports.staffRegister = (req, res) =>{
       res.json( {phone:`${doc.data().phone} has already been used.`})
     }
     else {
-      return firebase.auth().createUserWithEmailAndPassword(newStaff.email, newStaff.password).
-      then(data=>{
+      return firebase.auth().createUserWithEmailAndPassword(newStaff.email, newStaff.password)
+      .then(data=>{
         userId = data.user.uid
         return data.user.getIdToken()
       }).then(() =>{
-        const accountInfo ={
-          position: newStaff.position,
-          name: newStaff.name,
-          email: newStaff.email,
-          phone: newStaff.phone,
-          password: newStaff.password,
-          timeCreated: new Date().toISOString(),
-          userId
-        }
-        return admin.firestore().doc(`/accounts/${newDoctor.phone}`).set(accountInfo).then(()=>{
+        
+        newStaff.timeCreated = new Date().toISOString()
+        newStaff.userId = userId
+        return admin.firestore().doc(`/accounts/${newStaff.phone}`).set(newStaff).then(()=>{
           let user = firebase.auth().currentUser
           user.sendEmailVerification()
-          return res.json({message:` A verification link has been sent to your email!`})})
+          return res.status(201).json({message:` A verification link has been sent to your email!`})})
       })
     }
-    return res.json({bookingHisotry})
   })
   .catch(error=>{
     //If there is an error, show the error log
@@ -308,6 +319,7 @@ exports.staffRegister = (req, res) =>{
 
 exports.logOut= (req,res)=>{
   firebase.auth().signOut().then(()=>{
+    //Update login status to false and delete the current token
     const notLoggedIn ={
       loggedIn:false,
       token:''
@@ -321,6 +333,7 @@ exports.logOut= (req,res)=>{
     console.log(error)
   })
 }
+
 exports.getLoggedInStatus= (req,res)=>{
   admin.firestore().collection('Status').get().then(data =>{
     let state = {}
