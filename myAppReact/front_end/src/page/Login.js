@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import axios from 'axios'
 import '../App.css'
 class Login extends Component {
-  constructor(props){
-    super(props)
+  constructor(){
+    super()
     
     this.state  ={
       email:"",
@@ -40,6 +40,7 @@ class Login extends Component {
     })
     console.log("Login error", error.code)
   })
+  //Prevent the button to reload the page
   event.preventDefault()
 }
   

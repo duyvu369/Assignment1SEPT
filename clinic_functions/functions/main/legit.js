@@ -1,4 +1,3 @@
-const { service } = require("firebase-functions/lib/providers/analytics")
 
 //This file contain all of the validation functions
 exports.legitStatus =(statusCode)=>{
@@ -68,7 +67,6 @@ var baseFee =(function() {
 })()    
 var defaultPrice = baseFee.getInstance()
   defaultPrice.setPrice(150000)
-
 exports.priceCalculator=(service)=>{
   serviceCharge = 0
   totalPrice = 0

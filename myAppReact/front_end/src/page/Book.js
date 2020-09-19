@@ -3,9 +3,9 @@ import axios from "axios";
 import '../App.css'
 
 class Book extends Component {
-  constructor(props) {
-    super(props)
-    
+  constructor() {
+    super()
+    //Get input from user, get the token to find the user on the database
     this.state = {
       time: "",
       service: "",
@@ -19,7 +19,7 @@ class Book extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
-
+  //Get log in status
   componentDidMount(){
     axios.get('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/status')
     .then(res => {
@@ -31,13 +31,13 @@ class Book extends Component {
       .catch(error=>{
         console.log(error)
       })}
-
+  
   handleChange(event) {
     this.setState({
       [event.target.name]: event.target.value
     });
   }
-
+  //Submit the booking form to the API
   handleSubmit(event) {
     const { time,date, service} = this.state
     axios.post('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Booking', {
@@ -54,6 +54,7 @@ class Book extends Component {
       this.setState({
         msg:response.data.message
       })
+      //Get respond message from the backend
     })
     .catch((error) => {
       console.log(error)
@@ -61,6 +62,7 @@ class Book extends Component {
         msg: "Something went wrong! please try again!"
       })
     })
+    //Prevent the button to reload the page
     event.preventDefault();
     }
 
@@ -68,6 +70,7 @@ class Book extends Component {
     var loggedIn = this.state.loggedIn  
     var token = this.state.token
     if (loggedIn && token==""){
+      
       return <div><h3>Loading..... Please wait</h3></div>
     }
     else{

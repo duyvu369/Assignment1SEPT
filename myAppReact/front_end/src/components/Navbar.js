@@ -1,18 +1,19 @@
-
 import React, { Component, Fragment } from 'react'
 import axios from 'axios'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Button from '@material-ui/core/Button'
 import Link from 'react-router-dom/Link'
-
+//Standard Navigation bar
 class Navbar extends Component {
     constructor(){
         super()
+
         this.state=({
           loggedIn:false
         })
       }
+      //Fetch the login status
       componentDidMount(){    
         axios.get('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/status')
         .then(res => {
@@ -24,6 +25,7 @@ class Navbar extends Component {
         })
       }
     render() {
+        //If user has logged in show  Appointment, Profile, Book and Log out
         const loggedIn=this.state.loggedIn
         if(loggedIn){
         return (
@@ -49,6 +51,7 @@ class Navbar extends Component {
         )
     } else{
         return (
+            //If user has not logged in only show Basic pages
             <div>
             <AppBar>
             <Toolbar position ='sticky'>

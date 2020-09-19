@@ -2,14 +2,14 @@ import React, { Component } from 'react'
 
 class Doctors extends Component {
     
-    constructor(props){
-        super(props)
+    constructor(){
+        super()
         this.state = {
             items: [],
             isLoaded: false
         }
     }
-    
+    //Fetch the doctor info
     componentDidMount(){
         fetch('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Doctors')
         .then(res => res.json())

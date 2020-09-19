@@ -6,6 +6,7 @@ exports.createBooking = (req, res) =>{
     var user = {}
     admin.firestore().doc(`/accounts/${req.user.phone}`).get().then(doc=>{
     user = doc.data()
+    //Fetch the data from user account and discard of unrelated info
     delete user.userId
     delete user.password
     delete user.timeCreated
@@ -17,6 +18,7 @@ exports.createBooking = (req, res) =>{
     user.time = req.body.time
     user.service =  req.body.service
     user.status = "Pending"
+    //Default booking will have a status of Pending
     user.baseFee =priceCalculator(user.service)
     if(!checkService(user.service)){
       return res.json({message:"Invalid service!"})
@@ -27,9 +29,11 @@ exports.createBooking = (req, res) =>{
     if (user.date.length>10){
       return res.json({message:"Invalid format! XX/MM/YYYY"})
     }
+    //Check if the time and date is available
     admin.firestore().collection('Bookings').get().then(data =>{
     let full = false
     data.forEach(doc =>{
+      
       if(user.time === doc.data().time &&
       user.date  === doc.data().date &&
         user.service === doc.data().service){
@@ -47,12 +51,14 @@ exports.createBooking = (req, res) =>{
           res.status(201).json({ message : `A ${user.service} appointment  has been created! `})
           })})
       } else {
+        //If the time and date has already been booked, respond with an error message
         return res.json({message:"No doctors are available at that time!"})
       }
       })
    
       }
     )
+    //Show the error code in the console and respond with an error msg
     .catch((error)=>{
       console.error(error)
       res.status(500).json({ error: 'Server ever!'})
@@ -68,9 +74,10 @@ exports.getBookingDetail=(req,res)=>{
     bookingDetail =doc.data()
     return res.json({bookingDetail})
   })
+  //Show the error code in the console and respond with an error msg
   .catch(error=>{
     console.error(error)
-    res.status(500).json(error.code)
+    res.status(500).json({ error: 'Server ever!'})
   })
   }
 
@@ -93,7 +100,7 @@ exports.getBookingHistory =(req,res)=>{
   })
   .catch(error=>{
     console.error(error)
-    res.status(500).json({"message":error.code})
+    res.status(500).json({"error":error.code})
   })} 
   //if the doctor log in
   else if(doc.data().position==="Doctor") {
@@ -108,7 +115,7 @@ exports.getBookingHistory =(req,res)=>{
         })
       })
     //If there is no appointments, it will return a message
-    return res.json({appointmentList})
+    return res.json({appointmentList},{message:"Your assigned Booking:"})
   })
   .catch(error=>{
     console.error(error)
@@ -116,6 +123,7 @@ exports.getBookingHistory =(req,res)=>{
   })
   }
   else if(doc.data().position==="Manager"){
+    //The manager can see all the Bookings to assign them
     admin.firestore().collection('Bookings').get().then(data =>{
       let appointmentList =[]
       data.forEach(doc =>{
@@ -131,7 +139,7 @@ exports.getBookingHistory =(req,res)=>{
   }
 })}
 
-
+//Change Booking detail if necessary
 exports.updateAppointmentInfo =(req,res) =>{
   const newAppointmentInfo = {}
 
@@ -160,7 +168,7 @@ exports.updateAppointmentInfo =(req,res) =>{
   })
 }
 
-
+//Delete a booking
 exports.deleteBooking =(req,res)=>{
   admin.firestore().doc(`/Bookings/${req.query.bId}`).get().then(doc=>{
   if(!doc.exists){
@@ -169,14 +177,18 @@ exports.deleteBooking =(req,res)=>{
     return admin.firestore().doc(`/Bookings/${req.query.bId}`).delete().then(()=>{
       res.json({message:`Booking deleted successfully!`})
     })
-  .catch(error=>{
-    console.error(error)
-    return res.status(500).json({error: error.code})
-  })
+    
+    //Show the error code in the console and respond with an error msg
+    .catch(error=>{
+      console.error(error)
+      res.status(500).json({ error: 'Server ever!'})
+    })
   }}
   )}
 
+  //Filter bookings by date
 exports.bookingFilterByDate =(req,res)=>{
+  //Quickly validate the data
   if(req.body.date.length!=10){
     return res.json({message:"Invalid format! DD/MM/YYYY!"})
   }
@@ -188,10 +200,6 @@ exports.bookingFilterByDate =(req,res)=>{
           ...data.data()
       })
     })
-    
-    if (bookingsList.length===0){
-      return res.json({message: "No bookings were scheduled on that day!"})
-    }
     return res.json({bookingsList})
   })
   .catch(error=>{
@@ -215,11 +223,6 @@ exports.bookingsFilterByStatus =(req,res)=>{
           ...data.data()
         })
       })
-    
-    if (bookingsList.length===0){
-      //if there is no bookings, show a message
-      return res.json({message: "No bookings match your searching!"})
-    }
     return res.json({bookingsList})
   })
   .catch(error=>{
@@ -231,7 +234,7 @@ exports.bookingsFilterByStatus =(req,res)=>{
 exports.clearBookingHistory =(req,res)=>{
   var bookingHisotry = admin.firestore().collection('Bookings').where('phone','==',req.user.phone);
   bookingHisotry.get().then(data=> {
-    // if there are bookings in booking history, then delete them and send notification
+    // if there are bookings in booking history, then delete them
     if(data!=null){
   data.forEach(doc=> {
     doc.ref.delete()

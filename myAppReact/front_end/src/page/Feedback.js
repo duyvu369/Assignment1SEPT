@@ -70,6 +70,8 @@ class Feedback extends Component {
         .catch(error=>{
           console.log(error)
         })
+
+        //Prevent the button to reload the page
         event.preventDefault()
       }
     //Filter by date for manager
@@ -96,14 +98,13 @@ class Feedback extends Component {
             this.setState({
               msg: "Something went wrong! please try again!"
             })
-          });
+          })
       }
 
     render() {
         
         var {loggedIn, items,msg} = this.state  
-        //If there is no booking  in booking  history, show a message
-            //If the user is a manager, show the filters
+            //Only authenticated user can submit feedback
             if(loggedIn){return <div>
                 <h3>New feeback</h3>
                     <form onSubmit={this.handleSubmit} >

@@ -98,7 +98,8 @@ class Bookings extends Component {
             this.setState({
               msg: "Something went wrong! please try again!"
             })
-          });
+          })
+        //Prevent the button to reload the page
         event.preventDefault()
       }
       handleFilterByStatus(event) {
@@ -123,7 +124,8 @@ class Bookings extends Component {
             this.setState({
               msg: "Something went wrong! please try again!"
             })
-          });
+          })
+          //Prevent the button to reload the page
         event.preventDefault()
       }
       handleAssign(event){
@@ -159,6 +161,7 @@ class Bookings extends Component {
         .catch(error=>{
           console.log(error)
         })
+        //Prevent the button to reload the page
         event.preventDefault()
       }
     render() {
