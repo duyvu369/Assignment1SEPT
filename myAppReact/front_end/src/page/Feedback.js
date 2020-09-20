@@ -3,8 +3,8 @@ import axios from 'axios'
 
 class Feedback extends Component {
      
-    constructor(){
-        super()
+    constructor(props){
+        super(props)
         this.state = {
             items: [],
             loggedIn:false,
@@ -17,6 +17,7 @@ class Feedback extends Component {
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit= this.handleSubmit.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
+
     }
     
     componentDidMount(){
@@ -54,10 +55,11 @@ class Feedback extends Component {
         [event.target.name]: event.target.value
     })
     }
-    handleDelete(event){
-        console.log(this.state)
+
+
+      handleDelete=e=>{
         axios.delete('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Feedback',{
-          params:{fId:this.state.fId},
+          params:{fId:e},
           headers:{
             'Authorization':`${this.state.token}`
           }
@@ -70,9 +72,6 @@ class Feedback extends Component {
         .catch(error=>{
           console.log(error)
         })
-
-        //Prevent the button to reload the page
-        event.preventDefault()
       }
     //Filter by date for manager
     handleSubmit() {
@@ -137,24 +136,17 @@ class Feedback extends Component {
                     <li>ID: {item.fId}</li> 
                     <li>Context: {item.context}</li> 
                     <li>Rating: {item.rating}</li>  
-                    <li> Submitted by: {item.name}</li>         
+                    <li> Submitted by: {item.name}</li>
+                    <li><button onClick={this.handleDelete.bind(this, item.fId)}>Delete</button></li>         
                     </ul>
                       
                     </div>  
                     ))}
                     <h3>{msg}</h3>  
-                    <form onSubmit={this.handleDelete} >
-                    Delete a Feedback:
-                    ID: 
-                    <input
-                    type="text"
-                    name="fId"
-                    value={this.state.fId}
-                    placeholder="Enter the ID of the booking"
-                    onChange={this.handleChange}
-                    required
-                    /> <button type="submit">Delete</button>
-                    </form>
+                    
+                    
+                     
+                    
             </div>} else{
                 return <div>
                     

@@ -80,53 +80,54 @@ class Book extends Component {
         <h2 className="active underlineHover">Booking form </h2>
         <br></br>
         <h3>Our services:</h3>(Base fee = 150000VND)
-        
-         <tr>
+        <table border="1">
+         <tr >
             <td><h4>Service name</h4></td>
-            <td><h4>Charge(Base fee not incluced)</h4></td>
+            
+            <td><h4>Service charge<br></br>(Base fee not incluced)</h4></td>
          </tr>
          
          <tr>
             <td>General and specialty surgical services</td>
-            <td>1500000 VND </td>
+            <td>1 500 000 VND </td>
          </tr>
          <tr>
             <td>X-ray/Radiology services</td>
-            <td>2800000 VND </td>
+            <td>2 800 000 VND </td>
          </tr>
          <tr>
             <td>Physical therapy and rehabilitation services</td>
-            <td>650000 VND </td>
+            <td>650 000 VND </td>
          </tr>
          <tr>
             <td>Home nursing services</td>
-            <td>600000 VND </td>
+            <td>600 000 VND </td>
          </tr>
          <tr>
             <td>Mental health and drug treatment</td>
-            <td>800000 VND </td>
+            <td>800 000 VND </td>
          </tr>
          <tr>
             <td>Laboratory services</td>
-            <td>100000 VND </td>
+            <td>100 000 VND </td>
          </tr>
          <tr>
             <td>Blood services</td>
-            <td>400000 VND </td>
+            <td>400 000 VND </td>
          </tr>
          <tr>
             <td>Short-term hospitalization</td>
-            <td>900000 VND </td>
+            <td>900 000 VND </td>
          </tr>
          <tr>
             <td>Family planning services</td>
-            <td>385000 VND </td>
+            <td>385 000 VND </td>
          </tr>
          <tr>
             <td>Nutritional counselling</td>
-            <td>280000 VND </td>
+            <td>280 000 VND </td>
          </tr>
-
+         </table>
         
         <form onSubmit={this.handleSubmit} >
 

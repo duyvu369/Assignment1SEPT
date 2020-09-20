@@ -145,10 +145,9 @@ class Bookings extends Component {
         })
         event.preventDefault()
       }
-      handleDelete(event){
-        console.log(this.state)
+      handleDelete=(e)=>{
         axios.delete('https://us-central1-online-clinic-booking-system.cloudfunctions.net/AyPiAI/Booking',{
-          params:{bId:this.state.bId},
+          params:{bId:e},
           headers:{
             'Authorization':`${this.state.token}`
           }
@@ -161,17 +160,19 @@ class Bookings extends Component {
         .catch(error=>{
           console.log(error)
         })
-        //Prevent the button to reload the page
-        event.preventDefault()
       }
     render() {
         
         var {loggedIn, items,position} = this.state  
         //If there is no booking  in booking  history, show a message
-        if(loggedIn&&items.length==0){
+        if(loggedIn&&items.length==0&&position!="Doctor"){
             return <div><h3>Your booking history is empty!</h3>
             <br></br>
             <h3>You can book an appointment in Book</h3></div>
+        } else if(loggedIn&&items.length==0&&position=="Doctor"){
+          return <div>
+            <h3> There are currently no bookings assigned to you!</h3>
+          </div>
         }
         else {
             //If the user is a manager, show the filters
@@ -241,31 +242,20 @@ class Bookings extends Component {
                     /> 
                     <button type="submit">Assign</button>
                     </form>
-                    <form onSubmit={this.handleDelete} >
-                    Delete a booking:
-                    ID: 
-                    <input
-                    type="text"
-                    name="bId"
-                    value={this.state.bId}
-                    placeholder="Enter the ID of the booking"
-                    onChange={this.handleChange}
-                    required
-                    /> <button type="submit">Delete</button>
-                    </form>
                     <h3>{this.state.msg}</h3> 
                     {items.map(item=>(
                     <div className="card" key ={item.bId}>
                       
                     <h3>Service: {item.service}</h3> 
                     <ul>
+                    <li><h4>Time: {item.time} {item.date}</h4></li>
                     <li>ID: {item.bId}</li>  
-                    <li>Time: {item.time} {item.date}</li>
+                    
                     <li>Status: {item.status}</li>
                     <li>Doctor: {item.doctor}</li>
                     <li>Base fee: {item.baseFee} VND</li>
                     <li>Doctor contact: {item.doctorContact}</li>
-
+                    <button onClick={this.handleDelete.bind(this, item.bId)}>Delete</button>
                    
                     </ul>
                     
@@ -277,29 +267,20 @@ class Bookings extends Component {
                    
             </div>} else{
                 return <div>
-                    <h3>Delete a booking:</h3>
-                    <form onSubmit={this.handleDelete} >
                     
-                    ID: 
-                    <input
-                    type="text"
-                    name="bId"
-                    placeholder="Enter the ID of the booking"
-                    value={this.state.bId}
-                    onChange={this.handleChange}
-                    required
-                    /> <button type="submit">Delete</button>
-                    </form>
                     {items.map(item=>(
                     <div className="card" key ={item.bId}>  
+                    
                     <h3>Service: {item.service}</h3> 
                     <ul>
+                    <li><h4>Time: {item.time} {item.date}</h4></li>
                     <li>ID: {item.bId}</li>
-                    <li>Time: {item.time} {item.date}</li>
+                    
                     <li>Status: {item.status}</li>
                     <li>Doctor: {item.doctor}</li>
                     <li>Base fee: {item.baseFee} VND </li>
                     <li>Doctor contact: {item.doctorContact}</li>
+                    <button onClick={this.handleDelete.bind(this, item.bId)}>Delete</button>
                     </ul>
                     
                     <h3>{this.state.msg}</h3> 

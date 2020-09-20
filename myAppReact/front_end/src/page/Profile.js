@@ -121,15 +121,12 @@ componentDidMount(){
                 }
             })
                 .then(response => {
-                  if(response.status===201){
+
                     this.setState({
-                      msg:"Updated successfully!"
+                      msg:response.data.message
                     }) 
-                  }else{
-                    
-                      console.log(response)}
-                  }
-                )
+
+                  })
                 .catch((error) => {
                   console.log(error)
                   this.setState({
@@ -148,7 +145,7 @@ render() {
     }
     else if(loggedIn &&  Object.keys(user).length==0 ){
         return <div><h3>Loading..... please wait!</h3></div>
-    } else if(loggedIn && position ==="Doctor" &&Object.keys(user).length!=0) {
+    }  else if(loggedIn && position ==="Doctor" &&Object.keys(user).length!=0) {
         return <div >
         
                 <ul>
@@ -184,10 +181,11 @@ render() {
                             value={this.state.background}
                             onChange={this.handleChange}
                             placeholder={user.background}/>
+                    <h3 >{this.state.msg}</h3>
                     <br></br>
                     <button type="submit">UPDATE</button>
                     <Button onClick={this.handleDelete}>DELETE ACCOUNT</Button>
-                    <p className="message">{this.state.msg}</p>
+                    
                     </form>
 
 

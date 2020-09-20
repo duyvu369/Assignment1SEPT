@@ -157,7 +157,7 @@ exports.updateAccountInfo =(req,res) =>{
     //validate that the update info is correct
     if (newAccountInfo.password!=null){
       if((legitPassword(newAccountInfo.password)===false||emptyField(newAccountInfo.password))){
-      return res.json({message:'Password can not be empyty nor exceed 14 characters!' })
+      return res.json({message:'Password can not be empty nor exceed 14 characters!' })
     }}  else if (newAccountInfo.imgLink!=null){
         if(emptyField(newAccountInfo.imgLink)){
           return res.json({message:'Image link can not be empty'})
@@ -297,7 +297,7 @@ exports.staffRegister = (req, res) =>{
         return admin.firestore().doc(`/accounts/${newStaff.phone}`).set(newStaff).then(()=>{
           let user = firebase.auth().currentUser
           user.sendEmailVerification()
-          return res.status(201).json({message:` A verification link has been sent to your email!`})})
+          return res.status(201).json({message:` Account created successfully! A verification link has been sent to your email!`})})
       })
     }
   })
